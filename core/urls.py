@@ -2,15 +2,22 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # 1. Ruta Raíz y ruta explicita /dashboard/
-    path('', views.dashboard_cajero, name='dashboard'),
-    path('dashboard/', views.dashboard_cajero, name='dashboard_alias'),
-    
-    # 2. Rutas de Acción
+    # --- Vistas Principales ---
+    path('', views.dashboard_general, name='dashboard'),      # Menú Principal (Iconos)
+    path('terminal/', views.terminal_pos, name='terminal'),   # Escáner/Caja (Pantalla de trabajo)
+
+    # --- Operaciones Transaccionales ---
     path('cobrar/', views.procesar_cobro, name='cobrar'),
-    path('recargar/', views.recargar_saldo, name='recargar'), # NUEVA
-    path('crear/', views.crear_giftcard, name='crear_card'),
-    path('tarjeta/<uuid:uuid>/', views.ver_qr, name='ver_qr'),
+    path('recargar/', views.recargar_saldo, name='recargar'),
     path('transacciones/', views.historial_transacciones, name='transacciones'),
+
+    # --- Gestión Administrativa (Staff) ---
     path('lista-tarjetas/', views.lista_tarjetas, name='lista_tarjetas'),
+    path('crear/', views.crear_giftcard, name='crear_card'),
+    
+    # --- Acciones sobre Recursos (REST-style pero en vistas) ---
+    path('tarjeta/<uuid:uuid>/qr/', views.ver_qr, name='ver_qr'),
+    path('tarjeta/<uuid:uuid>/pin/', views.cambiar_pin, name='cambiar_pin'),
+    path('tarjeta/<uuid:uuid>/bloquear/', views.bloquear_tarjeta, name='bloquear_tarjeta'),
+    path('tarjeta/<uuid:uuid>/eliminar/', views.eliminar_tarjeta, name='eliminar_tarjeta'),
 ]

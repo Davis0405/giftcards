@@ -128,3 +128,12 @@ STATIC_URL = 'static/'
 # Configuración de Archivos Multimedia (Media)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Cuando te logueas, vas al dashboard
+LOGIN_REDIRECT_URL = 'dashboard'
+
+# Cuando te sales, vas de vuelta al login (AQUÍ ESTÁ LA CLAVE)
+LOGOUT_REDIRECT_URL = 'login' 
+
+# URL de la página de login
+LOGIN_URL = 'login'

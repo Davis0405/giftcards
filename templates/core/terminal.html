@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Terminal de Cobro{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+    // Tu lógica de escaneo va aquí
+    function onScanSuccess(decodedText, decodedResult) {
+        html5QrcodeScanner.clear();
+        let action = confirm(`QR: ${decodedText}\n\n[ACEPTAR] = COBRAR\n[CANCELAR] = RECARGAR`);
+        if (action) {
+            window.location.href = "{% url 'cobrar' %}?uuid=" + decodedText;
+        } else {
+            window.location.href = "{% url 'recargar' %}?uuid=" + decodedText;
+        }
+    }
+    
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader", { fps: 10, qrbox: { width: 250, height: 250 } }
+    );
+    html5QrcodeScanner.render(onScanSuccess);
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h5 class="mb-0">Escáner de Transacciones</h5>
+            </div>
+            <div class="card-body p-4">
+                <div id="reader"></div>
+                
+                <hr class="my-4">
+                
+                <h6 class="text-muted mb-3">O ingresa el código manualmente:</h6>
+                <form method="get" class="row g-2">
+                    <div class="col-12 mb-2">
+                        <input type="text" name="uuid" class="form-control text-center font-monospace" placeholder="Ej: a1b2-c3d4..." required>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" formaction="{% url 'cobrar' %}" class="btn btn-danger w-100">💰 COBRAR</button>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" formaction="{% url 'recargar' %}" class="btn btn-success w-100">➕ RECARGAR</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,67 +1,60 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <title>Administrar Tarjetas</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+{% extends 'base.html' %}
 
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container">
-            <span class="navbar-brand">Panel Administrativo</span>
-            <div>
-                <a href="{% url 'crear_card' %}" class="btn btn-success btn-sm">+ Nueva Tarjeta</a>
-                <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">Ir al POS</a>
-            </div>
-        </div>
-    </nav>
+{% block title %}Inventario de Tarjetas{% endblock %}
 
-    <div class="container">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Inventario de GiftCards</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Fecha Creación</th>
-                                <th>ID (UUID)</th>
-                                <th>Saldo Actual</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for tarjeta in tarjetas %}
-                            <tr>
-                                <td>{{ tarjeta.fecha_creacion|date:"d/m/Y H:i" }}</td>
-                                <td class="font-monospace small text-muted">{{ tarjeta.id }}</td>
-                                
-                                <td class="fw-bold text-success">Q{{ tarjeta.saldo }}</td>
-                                
-                                <td>
-                                    {% if tarjeta.saldo > 0 %}
-                                        <span class="badge bg-success">Con Fondos</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Agotada</span>
-                                    {% endif %}
-                                </td>
-                                
-                                <td>
-                                    <a href="{% url 'ver_qr' uuid=tarjeta.id %}" class="btn btn-sm btn-outline-primary">
-                                        👁️ Ver QR
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="text-secondary">Administración de Tarjetas</h3>
+    <a href="{% url 'crear_card' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i> Nueva Tarjeta</a>
+</div>
+
+<div class="card shadow border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Fecha</th>
+                        <th>ID (UUID)</th>
+                        <th>Saldo</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tarjeta in tarjetas %}
+                    <tr class="{% if not tarjeta.activa %}table-danger{% endif %}">
+                        <td class="ps-3 text-muted small">{{ tarjeta.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                        <td class="font-monospace small">...{{ tarjeta.id|stringformat:"s"|slice:"-8:" }}</td>
+                        <td class="fw-bold text-success">Q{{ tarjeta.saldo }}</td>
+                        <td>
+                            {% if not tarjeta.activa %}
+                                <span class="badge bg-danger">BLOQUEADA</span>
+                            {% elif tarjeta.saldo > 0 %}
+                                <span class="badge bg-success">ACTIVA</span>
+                            {% else %}
+                                <span class="badge bg-secondary">AGOTADA</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'ver_qr' uuid=tarjeta.id %}" class="btn btn-sm btn-outline-primary" title="Ver QR">👁️</a>
+                                <a href="{% url 'cambiar_pin' uuid=tarjeta.id %}" class="btn btn-sm btn-outline-warning text-dark" title="Cambiar PIN">🔒</a>
+                                <a href="{% url 'bloquear_tarjeta' uuid=tarjeta.id %}" class="btn btn-sm {% if tarjeta.activa %}btn-outline-secondary{% else %}btn-success{% endif %}" title="Bloquear/Activar">
+                                    {% if tarjeta.activa %}🚫{% else %}✅{% endif %}
+                                </a>
+                                <a href="{% url 'eliminar_tarjeta' uuid=tarjeta.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="return confirm('¿Eliminar tarjeta irreversiblemente?');">🗑️</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">No hay tarjetas registradas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-
-</body>
-</html>
+</div>
+{% endblock %}

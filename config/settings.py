@@ -82,7 +82,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'giftcards_db',     # Nombre de la BD
         'USER': 'giftcards',      # Usuario creado
-        'PASSWORD': 'GiftCards_2026$', # Contraseña creada
+        'PASSWORD': 'Perezoso2000', # Contraseña creada
         'HOST': 'localhost',
         'PORT': '5432',
     }

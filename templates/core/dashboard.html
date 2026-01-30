@@ -1,56 +1,284 @@
 {% extends 'base.html' %}
 
-{% block title %}Panel Principal{% endblock %}
+{% block title %}Panel Principal - Cafetería{% endblock %}
 
 {% block extra_css %}
 <style>
-    .card-menu { transition: transform 0.2s; cursor: pointer; text-decoration: none; color: inherit; }
-    .card-menu:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
-    .icon-large { font-size: 3rem; margin-bottom: 15px; }
+    .dashboard-header {
+        background: linear-gradient(135deg, #8B4513 0%, #D2691E 50%, #F4A460 100%);
+        color: white;
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 25px rgba(139, 69, 19, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+        50% { transform: translate(-50%, -50%) rotate(180deg); }
+    }
+
+    .dashboard-header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 2;
+    }
+
+    .dashboard-header p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+        margin: 0.5rem 0 0 0;
+        font-weight: 300;
+        position: relative;
+        z-index: 2;
+    }
+
+    .welcome-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+        position: relative;
+        z-index: 2;
+    }
+
+    .card-menu {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .card-menu:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .card-menu .card-body {
+        padding: 1.5rem 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .icon-large {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .card-menu:hover .icon-large {
+        transform: scale(1.1);
+    }
+
+    /* Tarjetas con colores vibrantes */
+    .card-menu.pos-card {
+        background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+        color: white;
+    }
+
+    .card-menu.pos-card:hover {
+        background: linear-gradient(135deg, #FF8B5A 0%, #F8A73E 100%);
+    }
+
+    .card-menu.history-card {
+        background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+        color: white;
+    }
+
+    .card-menu.history-card:hover {
+        background: linear-gradient(135deg, #6ED7CF 0%, #5AB09C 100%);
+    }
+
+    .card-menu.inventory-card {
+        background: linear-gradient(135deg, #45B7D1 0%, #96CEB4 100%);
+        color: white;
+    }
+
+    .card-menu.inventory-card:hover {
+        background: linear-gradient(135deg, #67C8E3 0%, #A8D8C4 100%);
+    }
+
+    .card-menu.create-card {
+        background: linear-gradient(135deg, #F39C12 0%, #E74C3C 100%);
+        color: white;
+    }
+
+    .card-menu.create-card:hover {
+        background: linear-gradient(135deg, #F4A932 0%, #E85D5D 100%);
+    }
+
+    .card-title {
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin: 0.8rem 0;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .card-text {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        font-weight: 400;
+    }
+
+    /* Fondo mejorado con patrón sutil */
+    body {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            radial-gradient(circle at 25% 25%, rgba(139, 69, 19, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(210, 105, 30, 0.03) 0%, transparent 50%);
+        background-size: 400px 400px;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    /* Elementos decorativos */
+    .decoration-circle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+        animation: bounce 3s ease-in-out infinite;
+    }
+
+    .decoration-circle:nth-child(1) {
+        width: 60px;
+        height: 60px;
+        top: 20%;
+        right: 10%;
+        animation-delay: 0s;
+    }
+
+    .decoration-circle:nth-child(2) {
+        width: 40px;
+        height: 40px;
+        top: 60%;
+        right: 20%;
+        animation-delay: 1s;
+    }
+
+    .decoration-circle:nth-child(3) {
+        width: 30px;
+        height: 30px;
+        top: 30%;
+        left: 15%;
+        animation-delay: 2s;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem 1rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.6rem;
+        }
+
+        .welcome-icon {
+            font-size: 2.5rem;
+        }
+
+        .card-menu .card-body {
+            padding: 1.2rem 0.8rem;
+        }
+
+        .icon-large {
+            font-size: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-    <h3 class="mb-4 text-secondary border-bottom pb-2">Panel de Control</h3>
+    <div class="dashboard-header">
+        <div class="decoration-circle"></div>
+        <div class="decoration-circle"></div>
+        <div class="decoration-circle"></div>
+        <span class="welcome-icon">🏪</span>
+        <h1>¡Hola!</h1>
+        <p>Tu cafetería está lista para atender</p>
+    </div>
 
     <div class="row g-4">
         <div class="col-md-6 col-lg-4">
-            <a href="{% url 'terminal' %}" class="card card-menu h-100 shadow-sm border-0 text-center py-4">
-                <div class="card-body">
-                    <div class="icon-large text-primary"><i class="bi bi-qr-code-scan"></i></div>
-                    <h4 class="card-title">Terminal POS</h4>
-                    <p class="card-text text-muted">Ir a pantalla de cobro y recargas.</p>
+            <a href="{% url 'terminal' %}" class="card card-menu pos-card h-100">
+                <div class="card-body text-center">
+                    <div class="icon-large"><i class="bi bi-cash-register"></i></div>
+                    <h4 class="card-title">💰 Vender</h4>
+                    <p class="card-text">Cobro y recargas rápidas</p>
                 </div>
             </a>
         </div>
 
         <div class="col-md-6 col-lg-4">
-            <a href="{% url 'transacciones' %}" class="card card-menu h-100 shadow-sm border-0 text-center py-4">
-                <div class="card-body">
-                    <div class="icon-large text-info"><i class="bi bi-clock-history"></i></div>
-                    <h4 class="card-title">Transacciones</h4>
-                    <p class="card-text text-muted">Ver historial de movimientos.</p>
+            <a href="{% url 'transacciones' %}" class="card card-menu history-card h-100">
+                <div class="card-body text-center">
+                    <div class="icon-large"><i class="bi bi-clock-history"></i></div>
+                    <h4 class="card-title">📊 Historial</h4>
+                    <p class="card-text">Revisa todas las transacciones</p>
                 </div>
             </a>
         </div>
 
         {% if request.user.is_staff %}
         <div class="col-md-6 col-lg-4">
-            <a href="{% url 'lista_tarjetas' %}" class="card card-menu h-100 shadow-sm border-0 text-center py-4">
-                <div class="card-body">
-                    <div class="icon-large text-warning"><i class="bi bi-collection"></i></div>
-                    <h4 class="card-title">Inventario</h4>
-                    <p class="card-text text-muted">Administrar tarjetas.</p>
+            <a href="{% url 'lista_tarjetas' %}" class="card card-menu inventory-card h-100">
+                <div class="card-body text-center">
+                    <div class="icon-large"><i class="bi bi-box-seam"></i></div>
+                    <h4 class="card-title">📦 Inventario</h4>
+                    <p class="card-text">Gestiona tus tarjetas</p>
                 </div>
             </a>
         </div>
 
         <div class="col-md-6 col-lg-4">
-            <a href="{% url 'crear_card' %}" class="card card-menu h-100 shadow-sm border-0 text-center py-4">
-                <div class="card-body">
-                    <div class="icon-large text-success"><i class="bi bi-plus-circle-dotted"></i></div>
-                    <h4 class="card-title">Emitir Tarjeta</h4>
-                    <p class="card-text text-muted">Generar nuevos códigos.</p>
+            <a href="{% url 'crear_card' %}" class="card card-menu create-card h-100">
+                <div class="card-body text-center">
+                    <div class="icon-large"><i class="bi bi-plus-lg"></i></div>
+                    <h4 class="card-title">✨ Crear Tarjeta</h4>
+                    <p class="card-text">Emite nuevas tarjetas</p>
                 </div>
             </a>
         </div>

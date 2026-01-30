@@ -6,15 +6,41 @@ from django.db import transaction
 from .forms import GiftCardForm
 from decimal import Decimal #para manejar dinero
 import random
+from django.utils import timezone
+from django.db.models import Sum 
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from io import BytesIO
+import os
+from django.conf import settings
 
+# En core/views.py
+from django.db.models import Sum
 
 @login_required
 def dashboard_general(request):
-    """
-    Renderiza el Menú Principal (Dashboard).
-    Archivo esperado: templates/core/dashboard.html
-    """
-    return render(request, 'core/dashboard.html')
+    # Datos para los indicadores del Dashboard
+    hoy = timezone.now().date()
+    
+    context = {
+        # Si es staff ve el total, si no, ve 0 (o lo que tú definas)
+        'total_tarjetas': GiftCard.objects.filter(activa=True).count() if request.user.is_staff else 0,
+        
+        # Ventas del usuario hoy
+        'ventas_hoy': Transaccion.objects.filter(
+            operador=request.user, 
+            fecha__date=hoy, 
+            tipo='CONSUMO'
+        ).aggregate(Sum('monto'))['monto__sum'] or 0,
+        
+        # Última vez que usó el sistema
+        'ultima_transaccion': Transaccion.objects.filter(
+            operador=request.user
+        ).order_by('-fecha').first().fecha if Transaccion.objects.filter(operador=request.user).exists() else None
+    }
+    
+    return render(request, 'core/dashboard.html', context)
 
 @login_required
 def terminal_pos(request):
@@ -32,7 +58,6 @@ def dashboard_cajero(request):
 def procesar_cobro(request):
     # 1. Obtener el UUID (ya sea por URL o por POST)
     uuid_tarjeta = request.GET.get('uuid') or request.POST.get('uuid')
-    
     # Validación: Si no hay UUID, regresar al dashboard para evitar errores
     if not uuid_tarjeta:
         messages.warning(request, "Debes escanear un código primero.")
@@ -41,6 +66,16 @@ def procesar_cobro(request):
     # 2. Buscar la tarjeta en la BD
     tarjeta = get_object_or_404(GiftCard, id=uuid_tarjeta)
     
+    if not tarjeta.activa:
+        messages.error(request, "❌ Esta tarjeta está BLOQUEADA y no puede usarse.")
+        return redirect('terminal')
+
+    # B) ¿Está vencida? (Aquí fue el error)
+    # Usamos timezone.now().date() para comparar solo la fecha (sin hora)
+    if tarjeta.fecha_vencimiento and tarjeta.fecha_vencimiento < timezone.now().date():
+        messages.error(request, "❌ Esta tarjeta ha VENCIDO.")
+        return redirect('terminal')
+
     # 3. Procesar el formulario cuando le dan "Cobrar"
     if request.method == 'POST':
         try:
@@ -119,14 +154,22 @@ def recargar_saldo(request):
 
 @login_required
 def crear_giftcard(request):
+    # SEGURIDAD: Solo gerentes
     if not request.user.is_staff:
-        messages.error(request, "No tienes permisos.")
+        messages.error(request, "⛔ No tienes permisos para emitir tarjetas.")
         return redirect('dashboard')
 
     if request.method == 'POST':
         form = GiftCardForm(request.POST)
         if form.is_valid():
             nueva_tarjeta = form.save()
+            if nueva_tarjeta.saldo > 0:
+                Transaccion.objects.create(
+                    card=nueva_tarjeta,
+                    monto=nueva_tarjeta.saldo,
+                    tipo='ACTIVACION',  # Tipo especial para diferenciar de recargas
+                    operador=request.user
+                )
             messages.success(request, "Tarjeta creada exitosamente.")
             return redirect('ver_qr', uuid=nueva_tarjeta.id)
     else:
@@ -142,6 +185,10 @@ def ver_qr(request, uuid):
 
 @login_required
 def historial_transacciones(request):
+    # SEGURIDAD: Solo gerentes
+    if not request.user.is_staff:
+        messages.error(request, "⛔ Acceso denegado: Solo Gerencia.")
+        return redirect('dashboard')
     # Obtenemos las últimas 50 transacciones (orden inverso por fecha)
     movimientos = Transaccion.objects.select_related('card', 'operador').all().order_by('-fecha')[:50]
     
@@ -151,9 +198,9 @@ def historial_transacciones(request):
 
 @login_required
 def lista_tarjetas(request):
-    # Solo el staff (admin) puede ver todas las tarjetas
+    # SEGURIDAD: Solo gerentes
     if not request.user.is_staff:
-        messages.error(request, "Acceso restringido.")
+        messages.error(request, "⛔ Acceso denegado: Solo Gerencia.")
         return redirect('dashboard')
 
     # Obtenemos todas, ordenadas por fecha de creación (descendente)
@@ -208,3 +255,59 @@ def eliminar_tarjeta(request, uuid):
         messages.success(request, "Tarjeta eliminada del sistema.")
         
     return redirect('lista_tarjetas')
+
+@login_required
+def corte_caja(request):
+    hoy = timezone.now().date()
+    
+    # 1. Filtramos: Usuario actual + Fecha de hoy + Solo Entradas de dinero (Cargas y Activaciones)
+    ingresos = Transaccion.objects.filter(
+        operador=request.user,
+        fecha__date=hoy,
+        tipo__in=['CARGA', 'ACTIVACION'] 
+    ).order_by('-fecha')
+    
+    # 2. Sumamos el total
+    total_dia = ingresos.aggregate(Sum('monto'))['monto__sum'] or 0
+    
+    # 3. Contamos cuántas operaciones fueron
+    cantidad_ops = ingresos.count()
+    
+    context = {
+        'movimientos': ingresos,
+        'total_dia': total_dia,
+        'cantidad_ops': cantidad_ops,
+        'fecha': hoy
+    }
+    return render(request, 'core/corte_caja.html', context)
+
+@login_required
+def generar_pdf(request, uuid):
+    # 1. Obtenemos la tarjeta
+    tarjeta = get_object_or_404(GiftCard, id=uuid)
+    
+    # 2. Preparamos los datos para el template
+    data = {
+        'tarjeta': tarjeta,
+        # Importante: pasamos request para que pueda armar las URLs de las imagenes
+        'request': request 
+    }
+    
+    # 3. Renderizamos el HTML
+    template = get_template('core/pdf_tarjeta.html')
+    html = template.render(data)
+    
+    # 4. Creamos el archivo PDF en memoria
+    result = BytesIO()
+    
+    # Esta función convierte el HTML a PDF
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    
+    # 5. Si no hubo errores, devolvemos el archivo
+    if not pdf.err:
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        filename = f"GiftCard_{tarjeta.id}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    
+    return HttpResponse("Error al generar el PDF", status=400)

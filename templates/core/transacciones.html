@@ -24,17 +24,22 @@
                     {% for mov in movimientos %}
                     <tr>
                         <td class="text-muted small">{{ mov.fecha|date:"d M Y H:i" }}</td>
+                        
                         <td>
                             {% if mov.tipo == 'CARGA' %}
-                                <span class="badge bg-success bg-opacity-75">RECARGA</span>
-                            {% else %}
-                                <span class="badge bg-danger bg-opacity-75">CONSUMO</span>
+                                <span class="badge bg-success">RECARGA</span>
+                            {% elif mov.tipo == 'CONSUMO' %}
+                                <span class="badge bg-danger">CONSUMO</span>
+                            {% elif mov.tipo == 'ACTIVACION' %}
+                                <span class="badge bg-primary">INICIAL</span>
                             {% endif %}
                         </td>
+                        
                         <td class="font-monospace text-primary small">{{ mov.card.id|stringformat:"s"|slice:":8" }}...</td>
                         <td><span class="fw-bold">{{ mov.operador.username|default:"Sistema" }}</span></td>
-                        <td class="text-end fw-bold {% if mov.tipo == 'CARGA' %}text-success{% else %}text-danger{% endif %}">
-                            {% if mov.tipo == 'CARGA' %}+{% else %}-{% endif %}Q{{ mov.monto }}
+                        
+                        <td class="text-end fw-bold {% if mov.tipo == 'CONSUMO' %}text-danger{% else %}text-success{% endif %}">
+                            {% if mov.tipo == 'CONSUMO' %}-{% else %}+{% endif %}Q{{ mov.monto }}
                         </td>
                     </tr>
                     {% empty %}

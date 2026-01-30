@@ -1,287 +1,769 @@
 {% extends 'base.html' %}
 
-{% block title %}Panel Principal - Cafetería{% endblock %}
+{% block title %}Dashboard - Cafetería Premium{% endblock %}
 
 {% block extra_css %}
 <style>
-    .dashboard-header {
-        background: linear-gradient(135deg, #8B4513 0%, #D2691E 50%, #F4A460 100%);
-        color: white;
-        padding: 2rem 1.5rem;
-        border-radius: 20px;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 25px rgba(139, 69, 19, 0.3);
+    .dashboard-container {
+        padding: 2rem 0;
+        min-height: 85vh;
+    }
+    
+    /* Welcome Banner Premium */
+    .welcome-banner {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
         position: relative;
         overflow: hidden;
+        box-shadow: 
+            0 10px 40px rgba(111, 78, 55, 0.2),
+            inset 0 1px 0 rgba(255,255,255,0.1);
+        animation: bannerAppear 0.6s ease-out;
     }
-
-    .dashboard-header::before {
+    
+    @keyframes bannerAppear {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Animated background pattern */
+    .welcome-banner::before {
         content: '';
         position: absolute;
         top: -50%;
         right: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        animation: float 6s ease-in-out infinite;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
     }
-
-    @keyframes float {
-        0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
-        50% { transform: translate(-50%, -50%) rotate(180deg); }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
     }
-
-    .dashboard-header h1 {
-        font-size: 2rem;
-        font-weight: 800;
-        margin: 0;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        position: relative;
-        z-index: 2;
-    }
-
-    .dashboard-header p {
-        font-size: 1.1rem;
-        opacity: 0.95;
-        margin: 0.5rem 0 0 0;
-        font-weight: 300;
-        position: relative;
-        z-index: 2;
-    }
-
-    .welcome-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        display: block;
-        position: relative;
-        z-index: 2;
-    }
-
-    .card-menu {
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        cursor: pointer;
-        text-decoration: none;
-        color: inherit;
-        border: none;
-        border-radius: 20px;
-        overflow: hidden;
-        position: relative;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
-
-    .card-menu:hover {
-        transform: translateY(-12px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
-        text-decoration: none;
-        color: inherit;
-    }
-
-    .card-menu .card-body {
-        padding: 1.5rem 1rem;
-        position: relative;
-        z-index: 2;
-    }
-
-    .icon-large {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        display: inline-block;
-        transition: all 0.3s ease;
-    }
-
-    .card-menu:hover .icon-large {
-        transform: scale(1.1);
-    }
-
-    /* Tarjetas con colores vibrantes */
-    .card-menu.pos-card {
-        background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-        color: white;
-    }
-
-    .card-menu.pos-card:hover {
-        background: linear-gradient(135deg, #FF8B5A 0%, #F8A73E 100%);
-    }
-
-    .card-menu.history-card {
-        background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
-        color: white;
-    }
-
-    .card-menu.history-card:hover {
-        background: linear-gradient(135deg, #6ED7CF 0%, #5AB09C 100%);
-    }
-
-    .card-menu.inventory-card {
-        background: linear-gradient(135deg, #45B7D1 0%, #96CEB4 100%);
-        color: white;
-    }
-
-    .card-menu.inventory-card:hover {
-        background: linear-gradient(135deg, #67C8E3 0%, #A8D8C4 100%);
-    }
-
-    .card-menu.create-card {
-        background: linear-gradient(135deg, #F39C12 0%, #E74C3C 100%);
-        color: white;
-    }
-
-    .card-menu.create-card:hover {
-        background: linear-gradient(135deg, #F4A932 0%, #E85D5D 100%);
-    }
-
-    .card-title {
-        font-weight: 700;
-        font-size: 1.2rem;
-        margin: 0.8rem 0;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-    }
-
-    .card-text {
-        font-size: 0.9rem;
-        opacity: 0.9;
-        font-weight: 400;
-    }
-
-    /* Fondo mejorado con patrón sutil */
-    body {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        position: relative;
-    }
-
-    body::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: 
-            radial-gradient(circle at 25% 25%, rgba(139, 69, 19, 0.03) 0%, transparent 50%),
-            radial-gradient(circle at 75% 75%, rgba(210, 105, 30, 0.03) 0%, transparent 50%);
-        background-size: 400px 400px;
-        pointer-events: none;
-        z-index: -1;
-    }
-
-    /* Elementos decorativos */
+    
+    /* Decorative circles */
     .decoration-circle {
         position: absolute;
         border-radius: 50%;
         background: rgba(255,255,255,0.1);
-        animation: bounce 3s ease-in-out infinite;
+        backdrop-filter: blur(10px);
     }
-
+    
     .decoration-circle:nth-child(1) {
+        width: 150px;
+        height: 150px;
+        top: -50px;
+        right: 50px;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .decoration-circle:nth-child(2) {
+        width: 100px;
+        height: 100px;
+        bottom: -30px;
+        left: 80px;
+        animation: float 8s ease-in-out infinite 1s;
+    }
+    
+    .decoration-circle:nth-child(3) {
         width: 60px;
         height: 60px;
-        top: 20%;
-        right: 10%;
-        animation-delay: 0s;
+        top: 40%;
+        right: 15%;
+        animation: float 7s ease-in-out infinite 2s;
     }
-
-    .decoration-circle:nth-child(2) {
-        width: 40px;
-        height: 40px;
-        top: 60%;
-        right: 20%;
-        animation-delay: 1s;
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0) scale(1);
+            opacity: 0.3;
+        }
+        50% {
+            transform: translateY(-20px) scale(1.1);
+            opacity: 0.6;
+        }
     }
-
-    .decoration-circle:nth-child(3) {
+    
+    /* Welcome content */
+    .welcome-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+    }
+    
+    .welcome-icon-container {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--accent-gold) 0%, #F4D03F 100%);
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 
+            0 8px 24px rgba(212, 175, 55, 0.4),
+            inset 0 -2px 8px rgba(0,0,0,0.1);
+        animation: iconBounce 2s ease-in-out infinite;
+        position: relative;
+    }
+    
+    @keyframes iconBounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+    
+    .welcome-icon-container::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        right: -5px;
         width: 30px;
         height: 30px;
-        top: 30%;
-        left: 15%;
-        animation-delay: 2s;
+        background: linear-gradient(135deg, var(--success) 0%, #22C55E 100%);
+        border-radius: 50%;
+        border: 4px solid var(--primary-dark);
+        box-shadow: 0 2px 8px rgba(45, 159, 93, 0.4);
     }
-
-    @keyframes bounce {
-        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-        40% { transform: translateY(-10px); }
-        60% { transform: translateY(-5px); }
+    
+    .welcome-icon {
+        font-size: 4rem;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
     }
-
+    
+    .welcome-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.75rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        letter-spacing: 0.5px;
+    }
+    
+    .welcome-subtitle {
+        font-size: 1.15rem;
+        color: rgba(255,255,255,0.95);
+        font-weight: 400;
+        margin: 0;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+    
+    .welcome-user {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255,255,255,0.15);
+        padding: 0.5rem 1.25rem;
+        border-radius: 50px;
+        margin-top: 1rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .welcome-user i {
+        color: var(--accent-gold);
+        font-size: 1.2rem;
+    }
+    
+    /* Quick Stats Bar */
+    .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+        animation: statsAppear 0.6s ease-out 0.2s both;
+    }
+    
+    @keyframes statsAppear {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .stat-item {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .stat-item:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--accent-gold);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        flex-shrink: 0;
+    }
+    
+    .stat-icon.primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+    }
+    
+    .stat-icon.success {
+        background: linear-gradient(135deg, var(--success), #16A34A);
+        color: white;
+    }
+    
+    .stat-icon.info {
+        background: linear-gradient(135deg, var(--info), #2563EB);
+        color: white;
+    }
+    
+    .stat-content {
+        flex: 1;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--light-text);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--dark-text);
+        line-height: 1;
+    }
+    
+    /* Section Title */
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: titleAppear 0.6s ease-out 0.3s both;
+    }
+    
+    @keyframes titleAppear {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .section-title i {
+        color: var(--accent-gold);
+        font-size: 2rem;
+    }
+    
+    /* Menu Cards Grid */
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        animation: gridAppear 0.6s ease-out 0.4s both;
+    }
+    
+    @keyframes gridAppear {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    /* Menu Card Premium */
+    .menu-card {
+        background: white;
+        border-radius: 20px;
+        padding: 0;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: var(--shadow-md);
+        border: 2px solid transparent;
+        position: relative;
+        height: 100%;
+    }
+    
+    .menu-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--card-gradient);
+        transition: height 0.3s ease;
+    }
+    
+    .menu-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--card-color);
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .menu-card:hover::before {
+        height: 100%;
+        opacity: 0.05;
+    }
+    
+    .menu-card-body {
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .menu-icon-container {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--card-gradient);
+        box-shadow: 0 4px 16px var(--card-shadow);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .menu-card:hover .menu-icon-container {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .menu-icon {
+        font-size: 2.5rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .menu-card:hover .menu-icon {
+        transform: scale(1.1);
+    }
+    
+    .menu-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--dark-text);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .menu-description {
+        font-size: 0.95rem;
+        color: var(--light-text);
+        margin: 0;
+        line-height: 1.5;
+    }
+    
+    .menu-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--card-gradient);
+        color: white;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 8px var(--card-shadow);
+    }
+    
+    /* Card Color Variants */
+    .menu-card.card-pos {
+        --card-gradient: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+        --card-color: #FF6B35;
+        --card-shadow: rgba(255, 107, 53, 0.3);
+    }
+    
+    .menu-card.card-history {
+        --card-gradient: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+        --card-color: #4ECDC4;
+        --card-shadow: rgba(78, 205, 196, 0.3);
+    }
+    
+    .menu-card.card-cashout {
+        --card-gradient: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+        --card-color: #9B59B6;
+        --card-shadow: rgba(155, 89, 182, 0.3);
+    }
+    
+    .menu-card.card-inventory {
+        --card-gradient: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+        --card-color: #3498DB;
+        --card-shadow: rgba(52, 152, 219, 0.3);
+    }
+    
+    .menu-card.card-create {
+        --card-gradient: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+        --card-color: #E74C3C;
+        --card-shadow: rgba(231, 76, 60, 0.3);
+    }
+    
+    .menu-card.card-settings {
+        --card-gradient: linear-gradient(135deg, #95A5A6 0%, #7F8C8D 100%);
+        --card-color: #95A5A6;
+        --card-shadow: rgba(149, 165, 166, 0.3);
+    }
+    
+    /* Admin Badge */
+    .admin-section {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 2px dashed rgba(111, 78, 55, 0.2);
+        position: relative;
+    }
+    
+    .admin-label {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, var(--accent-gold) 0%, #F4D03F 100%);
+        color: var(--primary-dark);
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .admin-label i {
+        font-size: 1rem;
+    }
+    
     /* Responsive */
+    @media (max-width: 1200px) {
+        .menu-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+    }
+    
     @media (max-width: 768px) {
-        .dashboard-header {
-            padding: 1.5rem 1rem;
+        .dashboard-container {
+            padding: 1.5rem 0;
         }
-
-        .dashboard-header h1 {
-            font-size: 1.6rem;
+        
+        .welcome-banner {
+            padding: 2rem 1.5rem;
+            margin-bottom: 2rem;
         }
-
+        
+        .welcome-icon-container {
+            width: 80px;
+            height: 80px;
+        }
+        
         .welcome-icon {
-            font-size: 2.5rem;
+            font-size: 3rem;
         }
-
-        .card-menu .card-body {
-            padding: 1.2rem 0.8rem;
-        }
-
-        .icon-large {
+        
+        .welcome-title {
             font-size: 2rem;
         }
-
-        .card-title {
-            font-size: 1.1rem;
+        
+        .welcome-subtitle {
+            font-size: 1rem;
+        }
+        
+        .quick-stats {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            padding: 1.25rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+        }
+        
+        .menu-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .menu-card-body {
+            padding: 1.75rem 1.25rem;
+        }
+        
+        .menu-icon-container {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .menu-icon {
+            font-size: 2rem;
+        }
+        
+        .menu-title {
+            font-size: 1.2rem;
+        }
+        
+        .admin-section {
+            margin-top: 2rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .welcome-banner {
+            padding: 1.5rem 1rem;
+        }
+        
+        .welcome-title {
+            font-size: 1.75rem;
+        }
+        
+        .decoration-circle {
+            display: none;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-    <div class="dashboard-header">
+<div class="dashboard-container">
+    
+    <div class="welcome-banner">
         <div class="decoration-circle"></div>
         <div class="decoration-circle"></div>
         <div class="decoration-circle"></div>
-        <span class="welcome-icon">🏪</span>
-        <h1>¡Hola!</h1>
-        <p>Tu cafetería está lista para atender</p>
+        
+        <div class="welcome-content">
+            <div class="welcome-icon-container">
+                <span class="welcome-icon">☕</span>
+            </div>
+            <h1 class="welcome-title">¡Bienvenido de vuelta!</h1>
+            <p class="welcome-subtitle">Tu cafetería está lista para un día exitoso</p>
+            <div class="welcome-user">
+                <i class="bi bi-person-circle"></i>
+                <span>{{ user.username|title }}</span>
+            </div>
+        </div>
     </div>
-
-    <div class="row g-4">
-        <div class="col-md-6 col-lg-4">
-            <a href="{% url 'terminal' %}" class="card card-menu pos-card h-100">
-                <div class="card-body text-center">
-                    <div class="icon-large"><i class="bi bi-cash-register"></i></div>
-                    <h4 class="card-title">💰 Vender</h4>
-                    <p class="card-text">Cobro y recargas rápidas</p>
-                </div>
-            </a>
+    
+    <div class="quick-stats">
+        <div class="stat-item">
+            <div class="stat-icon primary">
+                <i class="bi bi-credit-card-2-front"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Tarjetas Activas</div>
+                <div class="stat-value">{{ total_tarjetas|default:"-" }}</div>
+            </div>
         </div>
-
-        <div class="col-md-6 col-lg-4">
-            <a href="{% url 'transacciones' %}" class="card card-menu history-card h-100">
-                <div class="card-body text-center">
-                    <div class="icon-large"><i class="bi bi-clock-history"></i></div>
-                    <h4 class="card-title">📊 Historial</h4>
-                    <p class="card-text">Revisa todas las transacciones</p>
-                </div>
-            </a>
+        
+        <div class="stat-item">
+            <div class="stat-icon success">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Ventas Hoy</div>
+                <div class="stat-value">Q{{ ventas_hoy|default:"0.00" }}</div>
+            </div>
         </div>
-
-        {% if request.user.is_staff %}
-        <div class="col-md-6 col-lg-4">
-            <a href="{% url 'lista_tarjetas' %}" class="card card-menu inventory-card h-100">
-                <div class="card-body text-center">
-                    <div class="icon-large"><i class="bi bi-box-seam"></i></div>
-                    <h4 class="card-title">📦 Inventario</h4>
-                    <p class="card-text">Gestiona tus tarjetas</p>
-                </div>
-            </a>
+        
+        <div class="stat-item">
+            <div class="stat-icon info">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Última Transacción</div>
+                <div class="stat-value">{{ ultima_transaccion|date:"H:i"|default:"-" }}</div>
+            </div>
         </div>
-
-        <div class="col-md-6 col-lg-4">
-            <a href="{% url 'crear_card' %}" class="card card-menu create-card h-100">
-                <div class="card-body text-center">
-                    <div class="icon-large"><i class="bi bi-plus-lg"></i></div>
-                    <h4 class="card-title">✨ Crear Tarjeta</h4>
-                    <p class="card-text">Emite nuevas tarjetas</p>
-                </div>
-            </a>
-        </div>
-        {% endif %}
     </div>
+    
+    <h2 class="section-title">
+        <i class="bi bi-grid-3x3-gap-fill"></i>
+        <span>Acciones Rápidas</span>
+    </h2>
+    
+    <div class="menu-grid">
+        <a href="{% url 'terminal' %}" class="menu-card card-pos">
+            <span class="menu-badge">Rápido</span>
+            <div class="menu-card-body">
+                <div class="menu-icon-container">
+                    <i class="bi bi-cash-coin menu-icon"></i>
+                </div>
+                <h3 class="menu-title">Terminal de Ventas</h3>
+                <p class="menu-description">
+                    Procesa cobros y recargas de manera rápida y segura
+                </p>
+            </div>
+        </a>
+        
+        <a href="{% url 'transacciones' %}" class="menu-card card-history">
+            <div class="menu-card-body">
+                <div class="menu-icon-container">
+                    <i class="bi bi-clock-history menu-icon"></i>
+                </div>
+                <h3 class="menu-title">Historial</h3>
+                <p class="menu-description">
+                    Consulta todas las transacciones realizadas
+                </p>
+            </div>
+        </a>
+        
+        <a href="{% url 'corte_caja' %}" class="menu-card card-cashout">
+            <div class="menu-card-body">
+                <div class="menu-icon-container">
+                    <i class="bi bi-calculator-fill menu-icon"></i>
+                </div>
+                <h3 class="menu-title">Corte de Caja</h3>
+                <p class="menu-description">
+                    Revisa el total recaudado del día
+                </p>
+            </div>
+        </a>
+    </div>
+    
+    {% if request.user.is_staff %}
+    <div class="admin-section">
+        <div class="admin-label">
+            <i class="bi bi-shield-fill-check"></i>
+            <span>Administración</span>
+        </div>
+        
+        <div class="menu-grid">
+            <a href="{% url 'lista_tarjetas' %}" class="menu-card card-inventory">
+                <div class="menu-card-body">
+                    <div class="menu-icon-container">
+                        <i class="bi bi-box-seam-fill menu-icon"></i>
+                    </div>
+                    <h3 class="menu-title">Inventario</h3>
+                    <p class="menu-description">
+                        Administra todas las gift cards del sistema
+                    </p>
+                </div>
+            </a>
+            
+            <a href="{% url 'crear_card' %}" class="menu-card card-create">
+                <span class="menu-badge">Nuevo</span>
+                <div class="menu-card-body">
+                    <div class="menu-icon-container">
+                        <i class="bi bi-plus-circle-fill menu-icon"></i>
+                    </div>
+                    <h3 class="menu-title">Crear Tarjeta</h3>
+                    <p class="menu-description">
+                        Genera nuevas gift cards para tus clientes
+                    </p>
+                </div>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add sequential animation to menu cards
+        const cards = document.querySelectorAll('.menu-card');
+        cards.forEach((card, index) => {
+            card.style.animation = `gridAppear 0.5s ease-out ${0.4 + (index * 0.1)}s both`;
+        });
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Alt + V = Vender
+            if (e.altKey && e.key === 'v') {
+                window.location.href = "{% url 'terminal' %}";
+            }
+            
+            // Alt + H = Historial
+            if (e.altKey && e.key === 'h') {
+                window.location.href = "{% url 'transacciones' %}";
+            }
+            
+            // Alt + C = Corte
+            if (e.altKey && e.key === 'c') {
+                window.location.href = "{% url 'corte_caja' %}";
+            }
+            
+            {% if request.user.is_staff %}
+            // Alt + I = Inventario
+            if (e.altKey && e.key === 'i') {
+                window.location.href = "{% url 'lista_tarjetas' %}";
+            }
+            
+            // Alt + N = Nueva tarjeta
+            if (e.altKey && e.key === 'n') {
+                window.location.href = "{% url 'crear_card' %}";
+            }
+            {% endif %}
+        });
+        
+        // Show greeting based on time of day
+        const hour = new Date().getHours();
+        const title = document.querySelector('.welcome-title');
+        
+        if (hour < 12) {
+            title.textContent = '¡Buenos días!';
+        } else if (hour < 18) {
+            title.textContent = '¡Buenas tardes!';
+        } else {
+            title.textContent = '¡Buenas noches!';
+        }
+    });
+</script>
 {% endblock %}

@@ -20,4 +20,6 @@ urlpatterns = [
     path('tarjeta/<uuid:uuid>/pin/', views.cambiar_pin, name='cambiar_pin'),
     path('tarjeta/<uuid:uuid>/bloquear/', views.bloquear_tarjeta, name='bloquear_tarjeta'),
     path('tarjeta/<uuid:uuid>/eliminar/', views.eliminar_tarjeta, name='eliminar_tarjeta'),
+    path('corte-caja/', views.corte_caja, name='corte_caja'),
+    path('tarjeta/<uuid:uuid>/pdf/', views.generar_pdf, name='generar_pdf'),
 ]

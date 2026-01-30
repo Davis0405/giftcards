@@ -15,7 +15,9 @@ class GiftCard(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_vencimiento = models.DateField(null=True, blank=True)
     activa = models.BooleanField(default=True)
+    vencida = models.BooleanField(default=False)
     pin = models.CharField(max_length=4, default='0000', help_text="Clave de 4 dígitos")
+    email_cliente = models.EmailField(blank=True, null=True, verbose_name="Correo del Cliente")
     
     # Guardaremos la imagen del QR generada automáticamente
     qr_image = models.ImageField(upload_to='qrs/', blank=True, null=True)

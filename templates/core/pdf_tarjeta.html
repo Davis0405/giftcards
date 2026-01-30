@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gift Card Premium - Cafetería</title>
+    <style>
+        @page {
+            size: 10cm 15cm;
+            margin: 0.5cm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            color: #2C2416;
+            background: #FFFFFF;
+            line-height: 1.4;
+        }
+        
+        /* Contenedor principal con diseño premium */
+        .giftcard-container {
+            position: relative;
+            border: 3px solid #6F4E37;
+            padding: 0;
+            border-radius: 20px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FFF8F0 100%);
+            box-shadow: 0 4px 15px rgba(111, 78, 55, 0.15);
+        }
+        
+        /* Barra superior decorativa */
+        .header-stripe {
+            background: linear-gradient(135deg, #6F4E37 0%, #5A3E2B 100%);
+            height: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Patrón decorativo en el header */
+        .header-pattern {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.5) 10px,
+                rgba(255,255,255,0.5) 20px
+            );
+        }
+        
+        /* Logo y título */
+        .brand-section {
+            padding: 20px 15px 10px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .coffee-icon {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+        
+        .brand-name {
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #6F4E37;
+            margin-bottom: 3px;
+        }
+        
+        .brand-subtitle {
+            font-size: 11px;
+            color: #6B5D4F;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+        }
+        
+        /* Línea separadora decorativa */
+        .divider {
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, #D4AF37 50%, transparent 100%);
+            margin: 12px auto;
+        }
+        
+        /* Sección del QR */
+        .qr-section {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            margin: 0 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        
+        .qr-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #6B5D4F;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .qr-image {
+            display: block;
+            margin: 0 auto;
+            border: 3px solid #F5EBE0;
+            border-radius: 12px;
+            padding: 8px;
+            background: white;
+        }
+        
+        /* Esquinas decorativas del QR */
+        .qr-corner {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border: 2px solid #D4AF37;
+        }
+        
+        .qr-corner.top-left {
+            top: 8px;
+            left: 8px;
+            border-right: none;
+            border-bottom: none;
+            border-top-left-radius: 5px;
+        }
+        
+        .qr-corner.top-right {
+            top: 8px;
+            right: 8px;
+            border-left: none;
+            border-bottom: none;
+            border-top-right-radius: 5px;
+        }
+        
+        .qr-corner.bottom-left {
+            bottom: 8px;
+            left: 8px;
+            border-right: none;
+            border-top: none;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .qr-corner.bottom-right {
+            bottom: 8px;
+            right: 8px;
+            border-left: none;
+            border-top: none;
+            border-bottom-right-radius: 5px;
+        }
+        
+        /* Sección del monto */
+        .balance-section {
+            text-align: center;
+            padding: 20px 15px 15px;
+        }
+        
+        .balance-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #6B5D4F;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .balance-amount {
+            font-size: 52px;
+            font-weight: bold;
+            color: #2D9F5D;
+            letter-spacing: -1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            line-height: 1;
+        }
+        
+        .currency {
+            font-size: 36px;
+            vertical-align: super;
+            margin-right: 3px;
+        }
+        
+        /* Sección del PIN */
+        .pin-section {
+            background: linear-gradient(135deg, #F5EBE0 0%, #F9F9F9 100%);
+            border: 2px dashed #D4AF37;
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin: 15px 15px 10px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .pin-section::before,
+        .pin-section::after {
+            content: '🔒';
+            position: absolute;
+            font-size: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.3;
+        }
+        
+        .pin-section::before {
+            left: 8px;
+        }
+        
+        .pin-section::after {
+            right: 8px;
+        }
+        
+        .pin-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #6F4E37;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .pin-code {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            color: #2C2416;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* Sección de vencimiento */
+        .expiry-section {
+            text-align: center;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #FEE2E2 0%, #FEF2F2 100%);
+            border: 1px solid #FCA5A5;
+            border-radius: 8px;
+            margin: 10px 15px;
+        }
+        
+        .expiry-icon {
+            font-size: 14px;
+            margin-right: 5px;
+        }
+        
+        .expiry-text {
+            font-size: 11px;
+            color: #DC2626;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Serial */
+        .serial-section {
+            text-align: center;
+            padding: 8px 15px 5px;
+        }
+        
+        .serial-label {
+            font-size: 7px;
+            color: #9CA3AF;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+        
+        .serial-code {
+            font-size: 9px;
+            font-family: 'Courier New', monospace;
+            color: #6B7280;
+            letter-spacing: 1px;
+        }
+        
+        /* Footer */
+        .footer-section {
+            background: linear-gradient(135deg, #6F4E37 0%, #5A3E2B 100%);
+            padding: 12px 15px;
+            text-align: center;
+            margin-top: 15px;
+            position: relative;
+        }
+        
+        .footer-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 8px,
+                rgba(255,255,255,0.5) 8px,
+                rgba(255,255,255,0.5) 16px
+            );
+        }
+        
+        .footer-icon {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .footer-text {
+            font-size: 8px;
+            color: rgba(255,255,255,0.9);
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .footer-text strong {
+            color: #D4AF37;
+            font-weight: bold;
+        }
+        
+        .generation-date {
+            font-size: 7px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 5px;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Bordes decorativos en las esquinas del voucher */
+        .corner-decoration {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #D4AF37;
+        }
+        
+        .corner-decoration.top-left {
+            top: -2px;
+            left: -2px;
+            border-right: none;
+            border-bottom: none;
+            border-top-left-radius: 18px;
+        }
+        
+        .corner-decoration.top-right {
+            top: -2px;
+            right: -2px;
+            border-left: none;
+            border-bottom: none;
+            border-top-right-radius: 18px;
+        }
+        
+        .corner-decoration.bottom-left {
+            bottom: -2px;
+            left: -2px;
+            border-right: none;
+            border-top: none;
+            border-bottom-left-radius: 18px;
+        }
+        
+        .corner-decoration.bottom-right {
+            bottom: -2px;
+            right: -2px;
+            border-left: none;
+            border-top: none;
+            border-bottom-right-radius: 18px;
+        }
+        
+        /* Información de seguridad */
+        .security-features {
+            text-align: center;
+            padding: 8px 15px;
+            font-size: 7px;
+            color: #9CA3AF;
+            line-height: 1.4;
+        }
+        
+        .security-icon {
+            font-size: 10px;
+            margin-right: 3px;
+            color: #D4AF37;
+        }
+        
+        /* Sello de autenticidad */
+        .authenticity-seal {
+            display: inline-block;
+            background: linear-gradient(135deg, #D4AF37 0%, #F4D03F 100%);
+            color: #2C2416;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 7px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 8px 0;
+            box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
+        }
+        
+        /* Status active badge */
+        .status-badge {
+            display: inline-block;
+            background: #ECFDF5;
+            border: 1px solid #10B981;
+            color: #065F46;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+        }
+        
+        .status-icon {
+            font-size: 9px;
+            margin-right: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="giftcard-container">
+        <!-- Decoraciones de esquina -->
+        <div class="corner-decoration top-left"></div>
+        <div class="corner-decoration top-right"></div>
+        <div class="corner-decoration bottom-left"></div>
+        <div class="corner-decoration bottom-right"></div>
+        
+        <!-- Header decorativo -->
+        <div class="header-stripe">
+            <div class="header-pattern"></div>
+        </div>
+        
+        <!-- Brand Section -->
+        <div class="brand-section">
+            <div class="coffee-icon">☕</div>
+            <div class="brand-name">Cafetería Premium</div>
+            <div class="brand-subtitle">Gift Card</div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <!-- QR Section -->
+        <div class="qr-section">
+            <div class="qr-corner top-left"></div>
+            <div class="qr-corner top-right"></div>
+            <div class="qr-corner bottom-left"></div>
+            <div class="qr-corner bottom-right"></div>
+            
+            <div class="qr-label">Escanea para usar</div>
+            <img src="{{ request.scheme }}://{{ request.get_host }}{{ tarjeta.qr_image.url }}" 
+                 class="qr-image" 
+                 width="200" 
+                 height="200"
+                 alt="QR Code">
+        </div>
+        
+        <!-- Balance Section -->
+        <div class="balance-section">
+            <div class="balance-label">Saldo disponible</div>
+            <div class="balance-amount">
+                <span class="currency">Q</span>{{ tarjeta.saldo|floatformat:2 }}
+            </div>
+            <div class="status-badge">
+                <span class="status-icon">✓</span> Tarjeta Activa
+            </div>
+        </div>
+        
+        <!-- PIN Section -->
+        <div class="pin-section">
+            <div class="pin-label">🔐 Pin de Seguridad</div>
+            <div class="pin-code">{{ tarjeta.pin }}</div>
+        </div>
+        
+        <!-- Expiry Section (si existe) -->
+        {% if tarjeta.fecha_vencimiento %}
+        <div class="expiry-section">
+            <span class="expiry-icon">⚠️</span>
+            <span class="expiry-text">Válida hasta: {{ tarjeta.fecha_vencimiento|date:"d/m/Y" }}</span>
+        </div>
+        {% endif %}
+        
+        <!-- Serial Section -->
+        <div class="serial-section">
+            <div class="serial-label">Número de Serie</div>
+            <div class="serial-code">{{ tarjeta.id|stringformat:"s"|slice:"-16:"|upper }}</div>
+        </div>
+        
+        <!-- Authenticity Seal -->
+        <div style="text-align: center; padding: 5px 0;">
+            <span class="authenticity-seal">★ Documento Oficial ★</span>
+        </div>
+        
+        <!-- Security Features -->
+        <div class="security-features">
+            <span class="security-icon">🛡️</span>
+            Este documento representa valor monetario • Protegido por PIN
+            <br>
+            No se reembolsa • Transferible • Válido en todas las sucursales
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer-section">
+            <div class="footer-pattern"></div>
+            <div class="footer-icon">★</div>
+            <div class="footer-text">
+                <strong>IMPORTANTE:</strong> Guarde este voucher en lugar seguro
+                <br>
+                Presentar junto con PIN para realizar compras
+            </div>
+            <div class="generation-date">
+                📅 Generado: {% now "d/m/Y" %} • ⏰ {% now "H:i" %} hrs
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

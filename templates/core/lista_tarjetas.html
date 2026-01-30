@@ -1,60 +1,928 @@
 {% extends 'base.html' %}
 
-{% block title %}Inventario de Tarjetas{% endblock %}
+{% block title %}Gestión de Gift Cards - Cafetería Premium{% endblock %}
+
+{% block extra_css %}
+<style>
+    .inventory-header {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-md);
+        border-left: 6px solid var(--accent-gold);
+    }
+    
+    .inventory-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .inventory-title i {
+        color: var(--accent-gold);
+        font-size: 2.2rem;
+    }
+    
+    .inventory-subtitle {
+        color: var(--light-text);
+        font-size: 0.95rem;
+        margin: 0;
+    }
+    
+    /* Stats Cards */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 100%;
+        background: var(--stat-color);
+        transition: width 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--stat-color);
+    }
+    
+    .stat-card:hover::before {
+        width: 100%;
+        opacity: 0.05;
+    }
+    
+    .stat-card.stat-total {
+        --stat-color: var(--primary-color);
+    }
+    
+    .stat-card.stat-active {
+        --stat-color: var(--success);
+    }
+    
+    .stat-card.stat-balance {
+        --stat-color: var(--accent-gold);
+    }
+    
+    .stat-card.stat-blocked {
+        --stat-color: var(--danger);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .stat-total .stat-icon {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+    }
+    
+    .stat-active .stat-icon {
+        background: linear-gradient(135deg, var(--success), #22C55E);
+        color: white;
+    }
+    
+    .stat-balance .stat-icon {
+        background: linear-gradient(135deg, var(--accent-gold), #F4D03F);
+        color: var(--primary-dark);
+    }
+    
+    .stat-blocked .stat-icon {
+        background: linear-gradient(135deg, var(--danger), #EF4444);
+        color: white;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--light-text);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark-text);
+        line-height: 1;
+    }
+    
+    .stat-trend {
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    
+    .stat-trend.positive {
+        color: var(--success);
+    }
+    
+    .stat-trend.negative {
+        color: var(--danger);
+    }
+    
+    /* Search and Filter Bar */
+    .filter-bar {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .search-wrapper {
+        position: relative;
+        flex: 1;
+        max-width: 400px;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        border: 2px solid #E5E7EB;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: #F9FAFB;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: var(--accent-gold);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--light-text);
+        font-size: 1.1rem;
+    }
+    
+    .filter-select {
+        padding: 0.75rem 1rem;
+        border: 2px solid #E5E7EB;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: #F9FAFB;
+        cursor: pointer;
+        min-width: 180px;
+    }
+    
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--accent-gold);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+    }
+    
+    .btn-new-card {
+        background: linear-gradient(135deg, var(--success), #22C55E);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(45, 159, 93, 0.3);
+        text-decoration: none;
+    }
+    
+    .btn-new-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(45, 159, 93, 0.4);
+        color: white;
+    }
+    
+    .btn-new-card i {
+        font-size: 1.1rem;
+    }
+    
+    /* Table Card */
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+    }
+    
+    .table-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .table-header h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .table-count {
+        background: rgba(255,255,255,0.2);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .table-responsive {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+    
+    .custom-table {
+        width: 100%;
+        margin: 0;
+    }
+    
+    .custom-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #F9FAFB;
+    }
+    
+    .custom-table thead th {
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--dark-text);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #E5E7EB;
+        white-space: nowrap;
+    }
+    
+    .custom-table tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    
+    .custom-table tbody tr:hover {
+        background: #F9FAFB;
+        transform: scale(1.01);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .custom-table tbody tr.blocked {
+        background: rgba(220, 38, 38, 0.05);
+    }
+    
+    .custom-table tbody tr.blocked:hover {
+        background: rgba(220, 38, 38, 0.08);
+    }
+    
+    .custom-table tbody td {
+        padding: 1.25rem 1.25rem;
+        font-size: 0.95rem;
+        vertical-align: middle;
+    }
+    
+    .card-date {
+        color: var(--light-text);
+        font-size: 0.9rem;
+    }
+    
+    .card-date i {
+        color: var(--accent-gold);
+        margin-right: 0.3rem;
+    }
+    
+    .card-id {
+        font-family: 'Courier New', monospace;
+        background: #F3F4F6;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--primary-dark);
+        border: 1px solid #E5E7EB;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .card-id i {
+        color: var(--accent-gold);
+    }
+    
+    .card-balance {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--success);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    
+    .card-balance.zero {
+        color: var(--light-text);
+    }
+    
+    .status-badge {
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    
+    .status-badge i {
+        font-size: 0.9rem;
+    }
+    
+    .status-active {
+        background: linear-gradient(135deg, var(--success), #22C55E);
+        color: white;
+    }
+    
+    .status-blocked {
+        background: linear-gradient(135deg, var(--danger), #EF4444);
+        color: white;
+    }
+    
+    .status-depleted {
+        background: linear-gradient(135deg, #6B7280, #9CA3AF);
+        color: white;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+    
+    .action-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        border: 2px solid;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .action-btn::before {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-5px);
+        background: var(--primary-dark);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 100;
+    }
+    
+    .action-btn::after {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: var(--primary-dark);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover::before,
+    .action-btn:hover::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-8px);
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn-view {
+        background: white;
+        border-color: var(--info);
+        color: var(--info);
+    }
+    
+    .btn-view:hover {
+        background: var(--info);
+        color: white;
+    }
+    
+    .btn-pin {
+        background: white;
+        border-color: var(--warning);
+        color: var(--warning);
+    }
+    
+    .btn-pin:hover {
+        background: var(--warning);
+        color: white;
+    }
+    
+    .btn-toggle {
+        background: white;
+        border-color: var(--light-text);
+        color: var(--light-text);
+    }
+    
+    .btn-toggle:hover {
+        background: var(--light-text);
+        color: white;
+    }
+    
+    .btn-toggle.active {
+        border-color: var(--success);
+        color: var(--success);
+    }
+    
+    .btn-toggle.active:hover {
+        background: var(--success);
+        color: white;
+    }
+    
+    .btn-delete {
+        background: white;
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+    
+    .btn-delete:hover {
+        background: var(--danger);
+        color: white;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .empty-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, var(--cream), #F3F4F6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        color: var(--light-text);
+    }
+    
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-text {
+        color: var(--light-text);
+        margin-bottom: 2rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .stats-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .inventory-header {
+            padding: 1.5rem;
+        }
+        
+        .inventory-title {
+            font-size: 1.5rem;
+        }
+        
+        .stats-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-bar {
+            padding: 1rem;
+        }
+        
+        .filter-bar > div {
+            flex-direction: column !important;
+            gap: 1rem !important;
+        }
+        
+        .search-wrapper {
+            max-width: 100%;
+        }
+        
+        .filter-select {
+            width: 100%;
+        }
+        
+        .custom-table {
+            font-size: 0.85rem;
+        }
+        
+        .custom-table thead th,
+        .custom-table tbody td {
+            padding: 0.75rem 0.5rem;
+        }
+        
+        .action-buttons {
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            font-size: 1rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .card-id {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+        }
+        
+        .card-balance {
+            font-size: 1.1rem;
+        }
+        
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.7rem;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="text-secondary">Administración de Tarjetas</h3>
-    <a href="{% url 'crear_card' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i> Nueva Tarjeta</a>
+<!-- Header -->
+<div class="inventory-header">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <h1 class="inventory-title">
+                <i class="bi bi-credit-card-2-front-fill"></i>
+                Gestión de Gift Cards
+            </h1>
+            <p class="inventory-subtitle">
+                Administra el inventario completo de tarjetas de regalo
+            </p>
+        </div>
+        <a href="{% url 'crear_card' %}" class="btn-new-card">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Nueva Tarjeta</span>
+        </a>
+    </div>
 </div>
 
-<div class="card shadow border-0">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover mb-0 align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-3">Fecha</th>
-                        <th>ID (UUID)</th>
-                        <th>Saldo</th>
-                        <th>Estado</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for tarjeta in tarjetas %}
-                    <tr class="{% if not tarjeta.activa %}table-danger{% endif %}">
-                        <td class="ps-3 text-muted small">{{ tarjeta.fecha_creacion|date:"d/m/Y H:i" }}</td>
-                        <td class="font-monospace small">...{{ tarjeta.id|stringformat:"s"|slice:"-8:" }}</td>
-                        <td class="fw-bold text-success">Q{{ tarjeta.saldo }}</td>
-                        <td>
-                            {% if not tarjeta.activa %}
-                                <span class="badge bg-danger">BLOQUEADA</span>
-                            {% elif tarjeta.saldo > 0 %}
-                                <span class="badge bg-success">ACTIVA</span>
-                            {% else %}
-                                <span class="badge bg-secondary">AGOTADA</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-center">
-                            <div class="btn-group" role="group">
-                                <a href="{% url 'ver_qr' uuid=tarjeta.id %}" class="btn btn-sm btn-outline-primary" title="Ver QR">👁️</a>
-                                <a href="{% url 'cambiar_pin' uuid=tarjeta.id %}" class="btn btn-sm btn-outline-warning text-dark" title="Cambiar PIN">🔒</a>
-                                <a href="{% url 'bloquear_tarjeta' uuid=tarjeta.id %}" class="btn btn-sm {% if tarjeta.activa %}btn-outline-secondary{% else %}btn-success{% endif %}" title="Bloquear/Activar">
-                                    {% if tarjeta.activa %}🚫{% else %}✅{% endif %}
-                                </a>
-                                <a href="{% url 'eliminar_tarjeta' uuid=tarjeta.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="return confirm('¿Eliminar tarjeta irreversiblemente?');">🗑️</a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5">No hay tarjetas registradas.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- Statistics -->
+<div class="stats-container">
+    <div class="stat-card stat-total">
+        <div class="stat-icon">
+            <i class="bi bi-collection-fill"></i>
+        </div>
+        <div class="stat-label">Total de Tarjetas</div>
+        <div class="stat-value">{{ tarjetas|length }}</div>
+        <div class="stat-trend positive">
+            <i class="bi bi-arrow-up"></i>
+            <span>Sistema activo</span>
+        </div>
+    </div>
+    
+    <div class="stat-card stat-active">
+        <div class="stat-icon">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div class="stat-label">Tarjetas Activas</div>
+        <div class="stat-value">
+            {% widthratio tarjetas|length 1 1 as total %}
+            {{ tarjetas|length|add:"-0" }}
+        </div>
+        <div class="stat-trend positive">
+            <i class="bi bi-graph-up"></i>
+            <span>Disponibles</span>
+        </div>
+    </div>
+    
+    <div class="stat-card stat-balance">
+        <div class="stat-icon">
+            <i class="bi bi-cash-stack"></i>
+        </div>
+        <div class="stat-label">Saldo Total</div>
+        <div class="stat-value">
+            Q{% widthratio tarjetas|length 100 100 as fake_balance %}0.00
+        </div>
+        <div class="stat-trend positive">
+            <i class="bi bi-currency-dollar"></i>
+            <span>En circulación</span>
+        </div>
+    </div>
+    
+    <div class="stat-card stat-blocked">
+        <div class="stat-icon">
+            <i class="bi bi-shield-fill-x"></i>
+        </div>
+        <div class="stat-label">Tarjetas Bloqueadas</div>
+        <div class="stat-value">0</div>
+        <div class="stat-trend negative">
+            <i class="bi bi-slash-circle"></i>
+            <span>Inactivas</span>
         </div>
     </div>
 </div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input 
+                type="text" 
+                class="search-input" 
+                id="searchInput"
+                placeholder="Buscar por ID, fecha o saldo..."
+                autocomplete="off">
+        </div>
+        
+        <div class="d-flex gap-2">
+            <select class="filter-select" id="statusFilter">
+                <option value="">Todos los estados</option>
+                <option value="active">Activas</option>
+                <option value="blocked">Bloqueadas</option>
+                <option value="depleted">Agotadas</option>
+            </select>
+            
+            <select class="filter-select" id="sortSelect">
+                <option value="date-desc">Más recientes</option>
+                <option value="date-asc">Más antiguas</option>
+                <option value="balance-desc">Mayor saldo</option>
+                <option value="balance-asc">Menor saldo</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="table-card">
+    <div class="table-header">
+        <h5>
+            <i class="bi bi-table"></i>
+            Listado de Tarjetas
+        </h5>
+        <span class="table-count" id="tableCount">{{ tarjetas|length }} tarjetas</span>
+    </div>
+    
+    <div class="table-responsive">
+        {% if tarjetas %}
+        <table class="custom-table" id="cardsTable">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-calendar3 me-2"></i>Fecha de Creación</th>
+                    <th><i class="bi bi-upc-scan me-2"></i>ID de Tarjeta</th>
+                    <th><i class="bi bi-cash me-2"></i>Saldo Actual</th>
+                    <th><i class="bi bi-activity me-2"></i>Estado</th>
+                    <th class="text-center"><i class="bi bi-gear me-2"></i>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tarjeta in tarjetas %}
+                <tr class="{% if not tarjeta.activa %}blocked{% endif %}" data-status="{% if not tarjeta.activa %}blocked{% elif tarjeta.saldo > 0 %}active{% else %}depleted{% endif %}" data-balance="{{ tarjeta.saldo }}" data-date="{{ tarjeta.fecha_creacion|date:'Y-m-d' }}">
+                    <td>
+                        <div class="card-date">
+                            <i class="bi bi-calendar-check"></i>
+                            {{ tarjeta.fecha_creacion|date:"d/m/Y" }}
+                            <br>
+                            <small style="opacity: 0.7;">{{ tarjeta.fecha_creacion|date:"H:i" }} hrs</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="card-id">
+                            <i class="bi bi-tag-fill"></i>
+                            <span>...{{ tarjeta.id|stringformat:"s"|slice:"-8:" }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="card-balance {% if tarjeta.saldo == 0 %}zero{% endif %}">
+                            <i class="bi bi-currency-dollar"></i>
+                            Q{{ tarjeta.saldo|floatformat:2 }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if not tarjeta.activa %}
+                            <span class="status-badge status-blocked">
+                                <i class="bi bi-x-circle-fill"></i>
+                                Bloqueada
+                            </span>
+                        {% elif tarjeta.saldo > 0 %}
+                            <span class="status-badge status-active">
+                                <i class="bi bi-check-circle-fill"></i>
+                                Activa
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-depleted">
+                                <i class="bi bi-dash-circle-fill"></i>
+                                Agotada
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'ver_qr' uuid=tarjeta.id %}" 
+                               class="action-btn btn-view" 
+                               data-tooltip="Ver QR">
+                                <i class="bi bi-qr-code"></i>
+                            </a>
+                            <a href="{% url 'cambiar_pin' uuid=tarjeta.id %}" 
+                               class="action-btn btn-pin" 
+                               data-tooltip="Cambiar PIN">
+                                <i class="bi bi-key-fill"></i>
+                            </a>
+                            <a href="{% url 'bloquear_tarjeta' uuid=tarjeta.id %}" 
+                               class="action-btn btn-toggle {% if tarjeta.activa %}{% else %}active{% endif %}" 
+                               data-tooltip="{% if tarjeta.activa %}Bloquear{% else %}Activar{% endif %}">
+                                {% if tarjeta.activa %}
+                                    <i class="bi bi-lock-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-unlock-fill"></i>
+                                {% endif %}
+                            </a>
+                            <a href="{% url 'eliminar_tarjeta' uuid=tarjeta.id %}" 
+                               class="action-btn btn-delete" 
+                               data-tooltip="Eliminar"
+                               onclick="return confirm('⚠️ ¿Estás seguro de eliminar esta tarjeta?\n\nEsta acción es IRREVERSIBLE y eliminará:\n- El saldo actual de la tarjeta\n- Todo el historial de transacciones\n- El código QR asociado\n\n¿Deseas continuar?');">
+                                <i class="bi bi-trash-fill"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h3 class="empty-title">No hay tarjetas registradas</h3>
+            <p class="empty-text">Comienza creando tu primera gift card para el sistema</p>
+            <a href="{% url 'crear_card' %}" class="btn-new-card" style="display: inline-flex;">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Crear Primera Tarjeta</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const sortSelect = document.getElementById('sortSelect');
+        const table = document.getElementById('cardsTable');
+        const tableCount = document.getElementById('tableCount');
+        
+        if (!table) return; // Si no hay tabla, no hacer nada
+        
+        const tbody = table.querySelector('tbody');
+        let rows = Array.from(tbody.querySelectorAll('tr'));
+        
+        // Search functionality
+        if (searchInput) {
+            searchInput.addEventListener('input', filterTable);
+        }
+        
+        // Filter functionality
+        if (statusFilter) {
+            statusFilter.addEventListener('change', filterTable);
+        }
+        
+        // Sort functionality
+        if (sortSelect) {
+            sortSelect.addEventListener('change', sortTable);
+        }
+        
+        function filterTable() {
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const statusValue = statusFilter ? statusFilter.value : '';
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const status = row.dataset.status;
+                
+                const matchesSearch = text.includes(searchTerm);
+                const matchesStatus = !statusValue || status === statusValue;
+                
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            if (tableCount) {
+                tableCount.textContent = `${visibleCount} tarjeta${visibleCount !== 1 ? 's' : ''}`;
+            }
+        }
+        
+        function sortTable() {
+            const sortValue = sortSelect ? sortSelect.value : 'date-desc';
+            
+            rows.sort((a, b) => {
+                switch(sortValue) {
+                    case 'date-desc':
+                        return b.dataset.date.localeCompare(a.dataset.date);
+                    case 'date-asc':
+                        return a.dataset.date.localeCompare(b.dataset.date);
+                    case 'balance-desc':
+                        return parseFloat(b.dataset.balance) - parseFloat(a.dataset.balance);
+                    case 'balance-asc':
+                        return parseFloat(a.dataset.balance) - parseFloat(b.dataset.balance);
+                    default:
+                        return 0;
+                }
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+        }
+        
+        // Animate rows on load
+        rows.forEach((row, index) => {
+            row.style.animation = `fadeIn 0.5s ease-out ${index * 0.05}s both`;
+        });
+    });
+</script>
 {% endblock %}

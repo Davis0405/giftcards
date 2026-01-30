@@ -111,9 +111,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-gt'  # Opcional: Para que los errores salgan en español
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Guatemala'  # <--- AQUÍ ESTÁ LA CLAVE
 
 USE_I18N = True
 
@@ -137,3 +137,12 @@ LOGOUT_REDIRECT_URL = 'login'
 
 # URL de la página de login
 LOGIN_URL = 'login'
+
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Para desarrollo
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Para producción
+EMAIL_HOST = 'smtp.gmail.com'  # Cambiar según el proveedor
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'fixfastpro@gmail.com'  # Cambiar por tu correo
+EMAIL_HOST_PASSWORD = 'ijurgqzfdnemrbci'  # Cambiar por tu contrase
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

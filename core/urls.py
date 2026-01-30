@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     # --- Vistas Principales ---
-    path('', views.dashboard_general, name='dashboard'),      # Menú Principal (Iconos)
+    #path('', views.dashboard_general, name='dashboard'),      # Menú Principal (Iconos)
     path('terminal/', views.terminal_pos, name='terminal'),   # Escáner/Caja (Pantalla de trabajo)
 
     # --- Operaciones Transaccionales ---

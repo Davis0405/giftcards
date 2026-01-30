@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views # Asegúrate de tener este import
 from django.conf import settings
 from django.conf.urls.static import static
+from dashboard import views as dash_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -12,6 +13,9 @@ urlpatterns = [
     
     # AQUÍ ESTÁ EL CAMBIO: Agregamos next_page='login'
     path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+
+    # 2. DASHBOARD (Es tu página de inicio)
+    path('', dash_views.index, name='dashboard'),
 
     path('', include('core.urls')),
 ]

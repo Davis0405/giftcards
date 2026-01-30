@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-n0&aizj68_96n_6jv1@_kx(7=hi*l9pmp$7n8#(x8g+h&#1&is'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -39,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    'dashboard',
     'rest_framework',
 ]
 
@@ -80,11 +85,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'giftcards_db',     # Nombre de la BD
-        'USER': 'giftcards',      # Usuario creado
-        'PASSWORD': 'Perezoso2000', # Contraseña creada
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME'),     # Nombre de la BD
+        'USER': os.getenv('DB_USER'),      # Usuario creado
+        'PASSWORD': os.getenv('DB_PASSWORD'), # Contraseña creada
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -143,6 +148,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Para producció
 EMAIL_HOST = 'smtp.gmail.com'  # Cambiar según el proveedor
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'fixfastpro@gmail.com'  # Cambiar por tu correo
-EMAIL_HOST_PASSWORD = 'ijurgqzfdnemrbci'  # Cambiar por tu contrase
+EMAIL_HOST_USER = os.getenv('EMAIL_USER')  # Cambiar por tu correo
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')  # Cambiar por tu contraseña de aplicación
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

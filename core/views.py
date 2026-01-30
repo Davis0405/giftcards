@@ -10,10 +10,13 @@ from django.utils import timezone
 from django.db.models import Sum 
 from django.http import HttpResponse
 from django.template.loader import get_template
-from xhtml2pdf import pisa
 from io import BytesIO
 import os
 from django.conf import settings
+from django.core.mail import EmailMessage
+from .utils import render_to_pdf
+import pdfkit
+from django.template.loader import render_to_string
 
 # En core/views.py
 from django.db.models import Sum
@@ -170,7 +173,31 @@ def crear_giftcard(request):
                     tipo='ACTIVACION',  # Tipo especial para diferenciar de recargas
                     operador=request.user
                 )
-            messages.success(request, "Tarjeta creada exitosamente.")
+            if nueva_tarjeta.email_cliente:
+                try:
+                    pdf_content = render_to_pdf('core/pdf_tarjeta.html', {
+                        'tarjeta': nueva_tarjeta,
+                        'request': request
+                    })
+                    
+                    if pdf_content:
+                        asunto = f"¡Tu Gift Card de Q{nueva_tarjeta.saldo} ha llegado! 🎁"
+                        mensaje = f"""... (Tu mensaje de bienvenida) ..."""
+                        
+                        email = EmailMessage(
+                            asunto,
+                            mensaje,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [nueva_tarjeta.email_cliente], # Usamos el campo del modelo
+                        )
+                        email.attach(f'GiftCard_{nueva_tarjeta.id}.pdf', pdf_content, 'application/pdf')
+                        email.send()
+                        messages.success(request, f"✅ Tarjeta creada y enviada a {nueva_tarjeta.email_cliente}")
+                    
+                except Exception as e:
+                    messages.warning(request, f"Tarjeta guardada, pero falló el envío: {e}")
+            else:
+                messages.success(request, "Tarjeta creada exitosamente (Sin correo).")
             return redirect('ver_qr', uuid=nueva_tarjeta.id)
     else:
         pin_aleatorio = str(random.randint(1000, 9999))
@@ -281,33 +308,42 @@ def corte_caja(request):
     }
     return render(request, 'core/corte_caja.html', context)
 
+import pdfkit # <--- Import nuevo
+from django.template.loader import render_to_string
+
 @login_required
 def generar_pdf(request, uuid):
-    # 1. Obtenemos la tarjeta
     tarjeta = get_object_or_404(GiftCard, id=uuid)
     
-    # 2. Preparamos los datos para el template
-    data = {
-        'tarjeta': tarjeta,
-        # Importante: pasamos request para que pueda armar las URLs de las imagenes
-        'request': request 
+    # 1. Configuración de wkhtmltopdf (Apunta a donde lo instalaste)
+    # Si lo instalaste en otra carpeta, cambia esta ruta:
+    path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+    config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+    
+    # 2. Opciones de impresión (Márgenes, tamaño)
+    options = {
+        'page-size': 'A5', # O puedes usar 'Letter'
+        'margin-top': '0.0in',
+        'margin-right': '0.0in',
+        'margin-bottom': '0.0in',
+        'margin-left': '0.0in',
+        'encoding': "UTF-8",
+        'no-outline': None,
+        'enable-local-file-access': None # Permite cargar imágenes locales
     }
     
-    # 3. Renderizamos el HTML
-    template = get_template('core/pdf_tarjeta.html')
-    html = template.render(data)
+    # 3. Renderizar HTML
+    html_string = render_to_string('core/pdf_tarjeta.html', {
+        'tarjeta': tarjeta,
+        'request': request
+    })
     
-    # 4. Creamos el archivo PDF en memoria
-    result = BytesIO()
+    # 4. Generar PDF
+    pdf = pdfkit.from_string(html_string, False, configuration=config, options=options)
     
-    # Esta función convierte el HTML a PDF
-    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    # 5. Respuesta
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f"GiftCard_{tarjeta.id}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
-    # 5. Si no hubo errores, devolvemos el archivo
-    if not pdf.err:
-        response = HttpResponse(result.getvalue(), content_type='application/pdf')
-        filename = f"GiftCard_{tarjeta.id}.pdf"
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response
-    
-    return HttpResponse("Error al generar el PDF", status=400)
+    return response

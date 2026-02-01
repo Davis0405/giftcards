@@ -25,3 +25,27 @@ Thumbs.db
 # --- Logs ---
 *.log
 *.pid
+
+# --- Migrations ---
+*/migrations/*.pyc
+*/migrations/__pycache__/
+*/migrations/*.py
+*/migrations/*.pyo
+*/migrations/*.pyc
+*/migrations/__init__.py
+!*/migrations/__init__.py
+
+# --- Coverage reports ---
+htmlcov/
+.coverage
+
+# --- Test reports ---
+.tox/
+.nox/
+
+# --- Celery ---
+celerybeat-schedule
+celerybeat.pid
+# --- Sphinx documentation ---
+docs/_build/
+

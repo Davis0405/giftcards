@@ -45,7 +45,19 @@ INSTALLED_APPS = [
     'core',
     'dashboard',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
+
+# Configuración de DRF
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # Para la App Móvil
+        'rest_framework.authentication.SessionAuthentication',  # Para probar en navegador
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated', # Todo privado por defecto
+    ],
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

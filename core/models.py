@@ -17,6 +17,7 @@ class GiftCard(models.Model):
     activa = models.BooleanField(default=True)
     vencida = models.BooleanField(default=False)
     pin = models.CharField(max_length=4, default='0000', help_text="Clave de 4 dígitos")
+    dueno = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='tarjetas')
     email_cliente = models.EmailField(blank=True, null=True, verbose_name="Correo del Cliente")
     
     # Guardaremos la imagen del QR generada automáticamente
@@ -33,7 +34,10 @@ class GiftCard(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Card {str(self.id)[:8]}... | Saldo: Q{self.saldo}"
+        # Actualizamos el string para que se vea bonito en el Admin
+        if self.dueno:
+            return f"Card de {self.dueno.username} - Q{self.saldo}"
+        return f"Card {self.email_cliente or 'Anónima'} - Q{self.saldo}"
 
 class Transaccion(models.Model):
     TIPOS = (

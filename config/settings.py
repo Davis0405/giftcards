@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'dashboard',
+    'api',
+    #Agregamos DRF
     'rest_framework',
     'rest_framework.authtoken',
 ]

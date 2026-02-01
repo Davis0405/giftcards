@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     #Agregamos DRF
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_yasg',
 ]
 
 # Configuración de DRF

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Helvetica, sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Cierre de Caja</h1>
+    <p><strong>Cajero:</strong> {{ cajero.get_full_name|default:cajero.username }}</p>
+    <p><strong>Fecha:</strong> {{ fecha }}</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Hora</th>
+                <th>Tarjeta</th>
+                <th>Tipo</th>
+                <th>Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mov in movimientos %}
+            <tr>
+                <td>{{ mov.fecha|date:"H:i" }}</td>
+                <td>**** {{ mov.card.id|stringformat:"s"|slice:"-4:" }}</td>
+                <td>{{ mov.tipo }}</td>
+                <td>Q{{ mov.monto }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total">
+        TOTAL RECAUDADO: Q{{ total_dia }}
+    </div>
+    
+    <br><br><br>
+    <div style="text-align: center;">
+        __________________________<br>
+        Firma del Cajero
+    </div>
+</body>
+</html>

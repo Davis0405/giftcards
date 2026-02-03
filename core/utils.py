@@ -1,39 +1,31 @@
-import pdfkit
-from django.template.loader import get_template
+# core/utils.py
+from io import BytesIO
+from xhtml2pdf import pisa
+from django.template.loader import render_to_string
 
-def render_to_pdf(template_src, context_dict={}):
+def render_to_pdf(template_path, context_dict):
     """
-    Genera un PDF usando pdfkit (wkhtmltopdf).
-    Retorna el contenido del PDF en bytes si es exitoso, o None si falla.
+    Genera un PDF desde una plantilla HTML usando xhtml2pdf
     """
-    
-    # 1. Configuración de la ruta al ejecutable (Vital en Windows)
-    # Verifica que esta ruta sea correcta en tu PC:
-    path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
-    
     try:
-        config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+        # Renderizar el HTML
+        html_string = render_to_string(template_path, context_dict)
         
-        # 2. Renderizamos el HTML a string primero
-        template = get_template(template_src)
-        html_string = template.render(context_dict)
+        # Crear PDF
+        result = BytesIO()
+        pdf_status = pisa.pisaDocument(
+            BytesIO(html_string.encode("UTF-8")), 
+            result
+        )
         
-        # 3. Opciones de configuración del PDF
-        options = {
-            'page-size': 'A5',        # Tamaño tipo media carta
-            'margin-top': '0.0in',
-            'margin-right': '0.0in',
-            'margin-bottom': '0.0in',
-            'margin-left': '0.0in',
-            'encoding': "UTF-8",
-            'no-outline': None,
-            'enable-local-file-access': None  # Permite cargar imágenes/QR locales
-        }
-        
-        # 4. Generamos el PDF en memoria (False hace que retorne bytes)
-        pdf = pdfkit.from_string(html_string, False, configuration=config, options=options)
-        return pdf
+        if pdf_status.err:
+            print(f"Error generando PDF: {pdf_status.err}")
+            return None
+            
+        return result.getvalue()
         
     except Exception as e:
         print(f"Error generando PDF: {e}")
+        import traceback
+        traceback.print_exc()
         return None

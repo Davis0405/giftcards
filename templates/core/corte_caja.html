@@ -33,8 +33,15 @@
                                 <td>
                                     {% if mov.tipo == 'ACTIVACION' %}
                                         <span class="badge bg-primary rounded-pill">NUEVA</span>
-                                    {% else %}
+                                        
+                                    {% elif mov.tipo == 'CARGA' %}
                                         <span class="badge bg-success rounded-pill">RECARGA</span>
+                                        
+                                    {% elif mov.tipo == 'CONSUMO' %}
+                                        <span class="badge bg-danger rounded-pill">COBRO</span>
+                                        
+                                    {% else %}
+                                        <span class="badge bg-secondary rounded-pill">{{ mov.tipo }}</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-end fw-bold">Q{{ mov.monto }}</td>
@@ -50,6 +57,9 @@
             <div class="card-footer bg-light text-center">
                 <button onclick="window.print()" class="btn btn-outline-dark btn-sm me-2">🖨️ Imprimir Reporte</button>
                 <a href="{% url 'dashboard' %}" class="btn btn-primary btn-sm">Volver al Inicio</a>
+                <a href="?accion=pdf" class="btn btn-danger">
+                    <i class="fas fa-file-pdf"></i> Cerrar Caja y Descargar PDF
+                </a>
             </div>
         </div>
     </div>

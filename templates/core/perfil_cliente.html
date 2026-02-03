@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">👋 Hola, {{ request.user.first_name }}</h2>
+    
+    <div class="row justify-content-center">
+        {% for tarjeta in tarjetas %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Gift Card</h5>
+                        <i class="fas fa-gift fa-2x"></i>
+                    </div>
+                    
+                    <h1 class="display-4 fw-bold my-3">Q{{ tarjeta.saldo }}</h1>
+                    
+                    <p class="mb-0">PIN: <strong>{{ tarjeta.pin }}</strong></p>
+                    <small>Vence: {{ tarjeta.fecha_vencimiento|date:"d M Y" }}</small>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center">
+                    <a href="{% url 'ver_qr' tarjeta.id %}" class="btn btn-light btn-sm rounded-pill px-4">
+                        <i class="fas fa-qrcode"></i> Ver QR
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <div class="alert alert-info">
+                No tienes tarjetas activas. ¡Pide tu primera Gift Card en caja! 🎁
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

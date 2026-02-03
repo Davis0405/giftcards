@@ -10,6 +10,11 @@ from rest_framework.authtoken.models import Token
 from .serializers import RegistroUsuarioSerializer
 import random
 from core.models import Transaccion
+from datetime import timedelta  # <--- AGREGAR
+from django.utils import timezone # <--- AGREGAR
+from django.contrib.auth.models import User, Group
+from datetime import timedelta
+from rest_framework.permissions import AllowAny
 
 class MiTarjetaView(APIView):
     """
@@ -91,47 +96,60 @@ class AccionTarjetaView(APIView):
 # 4. REGISTRO DE USUARIOS + CREACIÓN DE TARJETA AUTOMÁTICA
 class RegistrarUsuarioView(APIView):
     """
-    Crea usuario + GiftCard + Token en un solo paso.
-    Permite acceso libre (AllowAny) para que cualquiera pueda registrarse.
+    Crea usuario + Asigna Grupo 'Clientes' + Crea GiftCard + Token.
+    Acceso público (AllowAny).
     """
-    permission_classes = [] # Dejamos entrar a cualquiera (público)
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = RegistroUsuarioSerializer(data=request.data)
         
         if serializer.is_valid():
             try:
-                with transaction.atomic(): # Si algo falla aquí adentro, deshace todo
+                with transaction.atomic(): # Si algo falla, deshace todo
                     # 1. Crear Usuario
                     nuevo_usuario = serializer.save()
                     
-                    # 2. Crear su GiftCard automática
-                    # Generamos un PIN aleatorio inicial
+                    # 2. ASIGNAR GRUPO "Clientes" (A prueba de balas 🛡️)
+                    # get_or_create: Si el grupo no existe, lo crea y lo asigna.
+                    try:
+                        grupo_clientes, created = Group.objects.get_or_create(name='Clientes')
+                        nuevo_usuario.groups.add(grupo_clientes)
+                    except Exception as e:
+                        print(f"Advertencia: No se pudo asignar grupo: {e}")
+
+                    # 3. Configurar GiftCard (PIN y Vencimiento)
                     pin_random = str(random.randint(1000, 9999))
+                    vencimiento_default = timezone.now().date() + timedelta(days=365)
                     
+                    # 4. Crear la Tarjeta
                     tarjeta = GiftCard.objects.create(
                         dueno=nuevo_usuario,
                         email_cliente=nuevo_usuario.email, # Respaldo
-                        saldo=0.00, # Empieza en cero
+                        saldo=0.00,
                         pin=pin_random,
-                        activa=True
+                        activa=True,
+                        fecha_vencimiento=vencimiento_default
                     )
                     
-                    # 3. Generar Token de acceso (Auto-Login)
-                    token, created = Token.objects.get_or_create(user=nuevo_usuario)
+                    # 5. Generar Token (Auto-Login)
+                    token, _ = Token.objects.get_or_create(user=nuevo_usuario)
                     
                     return Response({
                         "mensaje": "¡Cuenta creada exitosamente!",
                         "token": token.key,
                         "usuario": nuevo_usuario.username,
                         "tarjeta_id": tarjeta.id,
-                        "pin_inicial": pin_random
-                    }, status=201)
+                        "pin_inicial": pin_random,
+                        "vencimiento": tarjeta.fecha_vencimiento,
+                        "grupo": "Clientes"
+                    }, status=status.HTTP_201_CREATED)
 
             except Exception as e:
-                return Response({"error": f"Error interno: {str(e)}"}, status=500)
+                # Capturamos cualquier error inesperado
+                return Response({"error": f"Error interno: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        return Response(serializer.errors, status=400)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class HistorialTransaccionesView(APIView):
     """

@@ -747,6 +747,8 @@
             <thead>
                 <tr>
                     <th><i class="bi bi-calendar3 me-2"></i>Fecha de Creación</th>
+                    <th><i class="bi bi-calendar3 me-2"></i>Fecha de Vencimiento</th>
+                    <th><i class="bi bi-calendar3 me-2"></i>Dueno</th>
                     <th><i class="bi bi-upc-scan me-2"></i>ID de Tarjeta</th>
                     <th><i class="bi bi-cash me-2"></i>Saldo Actual</th>
                     <th><i class="bi bi-activity me-2"></i>Estado</th>
@@ -762,6 +764,18 @@
                             {{ tarjeta.fecha_creacion|date:"d/m/Y" }}
                             <br>
                             <small style="opacity: 0.7;">{{ tarjeta.fecha_creacion|date:"H:i" }} hrs</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="card-date">
+                            <i class="bi bi-hourglass-split"></i>
+                            {{ tarjeta.fecha_vencimiento|date:"d/m/Y" }}
+                            </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-circle me-2 text-secondary"></i>
+                            <strong>{{ tarjeta.dueno }}</strong> 
                         </div>
                     </td>
                     <td>

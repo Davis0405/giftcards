@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Git
+.git/
+.gitignore
+
+# Media y archivos estáticos locales
+media/
+staticfiles/
+
+# Logs y entornos
+*.log
+.coverage
+htmlcov/
+.pytest_cache/
+
+# IDEs
+.idea/
+.vscode/
+*.swp

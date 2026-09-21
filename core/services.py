@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from .models import GiftCard, Transaccion
@@ -7,7 +8,10 @@ def procesar_consumo(uuid_tarjeta, monto, usuario_operador):
     Maneja el débito de saldo de forma atómica.
     Bloquea la fila de la DB hasta que termine la transacción.
     """
-    monto = float(monto) # Asegurar tipo numérico
+    try:
+        monto = Decimal(str(monto)) # Asegurar tipo numérico financiero Decimal
+    except Exception:
+        raise ValidationError("Monto inválido")
     
     if monto <= 0:
         raise ValidationError("El monto debe ser mayor a 0")

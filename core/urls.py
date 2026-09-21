@@ -5,6 +5,7 @@ urlpatterns = [
     # --- Vistas Principales ---
     #path('', views.dashboard_general, name='dashboard'),      # Menú Principal (Iconos)
     path('', views.home_redirect, name='home'),
+    path('perfil/', views.perfil_cliente, name='perfil_cliente'),
     path('terminal/', views.terminal_pos, name='terminal'),   # Escáner/Caja (Pantalla de trabajo)
 
     # --- Operaciones Transaccionales ---

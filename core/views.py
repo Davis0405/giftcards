@@ -19,7 +19,8 @@ from .utils import render_to_pdf
 from django.template.loader import render_to_string
 # En core/views.py
 from django.db.models import Sum
-from datetime import time, timedelta
+import time as pytime
+from datetime import timedelta
 from django.contrib.auth.models import User
 import threading
 from django.core.paginator import Paginator
@@ -160,7 +161,7 @@ def procesar_cobro(request, tarjeta_validada=None):
             if not constant_time_compare(pin_ingresado, tarjeta.pin):
                 messages.error(request, "❌ PIN INCORRECTO.")
                 # Agregar delay para prevenir fuerza bruta
-                time.sleep(1)
+                pytime.sleep(1)
                 return render(request, 'core/cobro.html', {'tarjeta': tarjeta})
             # --- FIN VALIDACIÓN ---
 
@@ -345,6 +346,12 @@ def bloquear_tarjeta(request, uuid):
     tarjeta.save()
     
     estado = "ACTIVADA" if tarjeta.activa else "BLOQUEADA"
+    
+    # 📝 Auditoría
+    logger.warning(
+        f"Tarjeta {uuid} {estado} por {request.user.username} | Saldo: Q{tarjeta.saldo}"
+    )
+
     # Usamos un mensaje diferente según el estado
     if tarjeta.activa:
         messages.success(request, f"Tarjeta {estado} exitosamente.")
@@ -408,7 +415,7 @@ def corte_caja(request):
                     [os.getenv('EMAIL_ADMIN')], # <--- Pon el correo del jefe aquí
                 )
                 email.attach(f'Corte_{hoy}.pdf', pdf, 'application/pdf')
-                EmailWithPDFThread(email).start() # Enviamos en silencio
+                EmailMessageThread(email).start() # Enviamos en silencio
 
                 # Descargar el PDF al navegador del cajero
                 response = HttpResponse(pdf, content_type='application/pdf')
@@ -462,9 +469,24 @@ def generar_pdf(request, uuid):
     return response
 
 # ========================================================================
-# 📧 CLASE MEJORADA PARA ENVÍO DE EMAIL CON PDF EN BACKGROUND
+# 📧 CLASES PARA ENVÍO DE EMAIL EN BACKGROUND
 # ========================================================================
 
+class EmailMessageThread(threading.Thread):
+    """
+    Thread para enviar un EmailMessage ya construido en segundo plano
+    """
+    def __init__(self, email_message):
+        self.email_message = email_message
+        threading.Thread.__init__(self)
+        self.daemon = True
+
+    def run(self):
+        try:
+            self.email_message.send()
+            print("✅ Email de reporte/corte enviado exitosamente")
+        except Exception as e:
+            print(f"❌ Error enviando email de corte: {e}")
 
 class EmailWithPDFThread(threading.Thread):
     """
@@ -545,16 +567,3 @@ Adjunto encontrarás tu código QR para usar la tarjeta.
         except Exception as e:
             print(f"Error convirtiendo QR: {e}")
             return None
-
-@login_required
-def bloquear_tarjeta(request, uuid):
-    tarjeta = get_object_or_404(GiftCard, id=uuid)
-    estado_anterior = tarjeta.activa
-    tarjeta.activa = not tarjeta.activa
-    tarjeta.save()
-    
-    # 📝 Auditoría
-    logger.warning(
-        f"Tarjeta {uuid} {'BLOQUEADA' if not tarjeta.activa else 'DESBLOQUEADA'} "
-        f"por {request.user.username} | Saldo: Q{tarjeta.saldo}"
-    )

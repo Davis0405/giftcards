@@ -2,8 +2,8 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
@@ -18,13 +18,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
-    'dashboard',
-    'api',
-    #Agregamos DRF
+    # Terceros
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg',
+    # Apps del proyecto
+    'core',
+    'dashboard',
+    'api',
 ]
 
 # Configuración de DRF
@@ -38,7 +40,17 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Configuración de CORS (para React / Frontend)
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+]
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -111,8 +123,8 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Cuando te logueas, vas al dashboard
-LOGIN_REDIRECT_URL = 'dashboard'
+# Cuando te logueas, vas a la redirección inteligente según tu rol (Gerente, Cajero, Cliente)
+LOGIN_REDIRECT_URL = 'home'
 
 # Cuando te sales, vas de vuelta al login (AQUÍ ESTÁ LA CLAVE)
 LOGOUT_REDIRECT_URL = 'login' 

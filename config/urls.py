@@ -32,10 +32,10 @@ urlpatterns = [
     path('accounts/login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
 
-    # 3. DASHBOARD (Inicio)
-    path('', dash_views.index, name='dashboard'), 
+    # 3. DASHBOARD (Panel de métricas)
+    path('dashboard/', dash_views.index, name='dashboard'), 
 
-    # 4. CORE (Resto de la app web)
+    # 4. CORE (Resto de la app web y redirección raíz por rol)
     path('', include('core.urls')),
     
     # 5. API (Backend Móvil)

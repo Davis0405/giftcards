@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: giftcards_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-giftcards_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      # Mapeo de puerto en el host: 5435 evita colisión con tus otros proyectos (5432 y 5433 ocupados)
+      - "${DB_PORT_HOST:-5435}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-giftcards_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - giftcards_net
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: giftcards_web
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - giftcards_net
+
+volumes:
+  postgres_data:
+    driver: local
+  media_data:
+    driver: local
+
+networks:
+  giftcards_net:
+    driver: bridge

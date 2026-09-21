@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
-  Coffee, 
   LayoutDashboard, 
   CreditCard, 
   ReceiptText, 
@@ -10,10 +9,10 @@ import {
   Store, 
   LogOut, 
   ChevronUp, 
-  User, 
   Sparkles,
-  ExternalLink
+  Layers
 } from 'lucide-react';
+import nexocardLogo from '../assets/nexocard.png';
 
 export default function Sidebar() {
   const { user, logout, isStaff, isCashier, isCustomer } = useAuth();
@@ -22,7 +21,6 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Cerrar dropdown al hacer click afuera
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -33,7 +31,6 @@ export default function Sidebar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Cerrar dropdown al cambiar de ruta
   useEffect(() => {
     setDropdownOpen(false);
   }, [location.pathname]);
@@ -51,20 +48,22 @@ export default function Sidebar() {
 
   return (
     <aside className="sidebar">
-      {/* 1. Header con Branding */}
+      {/* 1. Header con Logo Oficial NexoCard & Tenant */}
       <div className="sidebar-header">
-        <div className="brand-icon-wrapper">
-          <Coffee size={22} strokeWidth={2.4} />
-        </div>
-        <div className="brand-text">
-          <span className="brand-title">Cafetería Premium</span>
-          <span className="brand-subtitle">Gift Card System</span>
+        <img 
+          src={nexocardLogo} 
+          alt="NexoCard Logo" 
+          className="brand-logo-img"
+        />
+        <div className="tenant-badge" title="Organización / Comercio Activo">
+          <span className="tenant-dot"></span>
+          <span>Cafetería Premium</span>
         </div>
       </div>
 
       {/* 2. Navegación Categorizada */}
       <nav className="sidebar-nav">
-        {/* Grupo Gerencia / Staff */}
+        {/* Grupo Gerencia / Administración */}
         {isStaff && (
           <div>
             <div className="sidebar-group-title">Administración</div>
@@ -104,7 +103,7 @@ export default function Sidebar() {
         {/* Grupo Operación en Mostrador (Cajeros y Staff) */}
         {(isCashier || isStaff) && (
           <div>
-            <div className="sidebar-group-title">Operación en Caja</div>
+            <div className="sidebar-group-title">Operación POS</div>
             <ul className="sidebar-group-items">
               <li>
                 <NavLink 
@@ -156,7 +155,7 @@ export default function Sidebar() {
                 {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username}
               </div>
               <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>
-                {user?.email || `${user?.username}@cafeteria.com`}
+                {user?.email || `${user?.username}@nexocard.com`}
               </div>
             </div>
 
@@ -191,7 +190,7 @@ export default function Sidebar() {
               <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#fff', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                 {user?.username}
               </div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--color-gold-400)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.68rem', color: 'var(--color-cyan-400)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 700 }}>
                 {getRoleBadge()}
               </div>
             </div>

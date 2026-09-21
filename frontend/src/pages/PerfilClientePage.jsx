@@ -11,7 +11,6 @@ import {
   RefreshCw, 
   ArrowDownRight, 
   ArrowUpRight, 
-  Coffee, 
   Sparkles, 
   CheckCircle2, 
   AlertCircle,
@@ -19,6 +18,7 @@ import {
   ShieldCheck,
   Wifi
 } from 'lucide-react';
+import nexocardLogo from '../assets/nexocard.png';
 
 export default function PerfilClientePage() {
   const { user } = useAuth();
@@ -28,7 +28,7 @@ export default function PerfilClientePage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   
-  // PIN change state
+  // PIN
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinNuevo, setPinNuevo] = useState('');
   const [pinConfirm, setPinConfirm] = useState('');
@@ -62,7 +62,6 @@ export default function PerfilClientePage() {
     try {
       setActionLoading(true);
       setError(null);
-      const nuevoEstado = card.estado === 'ACTIVA' ? 'BLOQUEADA' : 'ACTIVA';
       await api.post(`/admin/tarjetas/${card.id}/bloquear/`, {
         accion: card.estado === 'ACTIVA' ? 'bloquear' : 'desbloquear'
       });
@@ -110,7 +109,7 @@ export default function PerfilClientePage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `GiftCard_${card.codigo}.pdf`);
+      link.setAttribute('download', `NexoCard_${card.codigo}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -139,120 +138,131 @@ export default function PerfilClientePage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <RefreshCw size={36} className="spin-slow" style={{ color: 'var(--amber-gold)' }} />
+        <RefreshCw size={36} className="spin-slow" style={{ color: 'var(--color-blue-600)' }} />
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--espresso-dark)', margin: '0 0 0.5rem 0' }}>
-          ¡Hola, {profile?.first_name || profile?.username}! ☕
-        </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
-          Administra tu tarjeta de regalo digital de Cafetería Premium, revisa tus consumos y controla tu seguridad.
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
+          <h1 className="page-title" style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+            Mi Billetera Digital
+          </h1>
+          <span style={{ 
+            backgroundColor: 'var(--color-blue-100)', 
+            color: 'var(--color-blue-700)', 
+            fontSize: '0.72rem', 
+            fontWeight: 700, 
+            padding: '0.2rem 0.55rem', 
+            borderRadius: '9999px',
+            textTransform: 'uppercase'
+          }}>
+            Cafetería Premium
+          </span>
+        </div>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.92rem', margin: 0 }}>
+          Hola, {profile?.first_name || profile?.username}. Gestiona tu tarjeta NexoCard, revisa consumos y controla tu seguridad.
         </p>
       </div>
 
       {/* Alertas */}
       {successMsg && (
         <div style={{ 
-          backgroundColor: '#ECFDF5', 
-          border: '1px solid #A7F3D0', 
-          color: '#065F46', 
+          backgroundColor: 'var(--color-success-100)', 
+          border: '1px solid rgba(22,163,74,0.2)', 
+          color: 'var(--color-success-600)', 
           padding: '1rem', 
-          borderRadius: '0.75rem', 
+          borderRadius: '14px', 
           marginBottom: '1.5rem',
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem'
         }}>
-          <CheckCircle2 size={20} style={{ color: '#10B981', flexShrink: 0 }} />
+          <CheckCircle2 size={20} style={{ flexShrink: 0 }} />
           <span>{successMsg}</span>
         </div>
       )}
 
       {error && (
         <div style={{ 
-          backgroundColor: '#FEF2F2', 
-          border: '1px solid #FECACA', 
-          color: '#991B1B', 
+          backgroundColor: 'var(--color-danger-100)', 
+          border: '1px solid rgba(220,38,38,0.2)', 
+          color: 'var(--color-danger-600)', 
           padding: '1rem', 
-          borderRadius: '0.75rem', 
+          borderRadius: '14px', 
           marginBottom: '1.5rem',
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem'
         }}>
-          <AlertCircle size={20} style={{ color: '#EF4444', flexShrink: 0 }} />
+          <AlertCircle size={20} style={{ flexShrink: 0 }} />
           <span>{error}</span>
         </div>
       )}
 
       {!card ? (
         <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <Coffee size={56} style={{ color: 'var(--amber-gold)', marginBottom: '1rem' }} />
-          <h2 style={{ fontSize: '1.4rem', fontWeight: '700', color: 'var(--espresso-dark)', marginBottom: '0.5rem' }}>
-            No tienes ninguna Gift Card vinculada
+          <CreditCard size={56} style={{ color: 'var(--color-blue-500)', marginBottom: '1rem' }} />
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
+            No tienes ninguna tarjeta NexoCard vinculada
           </h2>
-          <p style={{ color: 'var(--text-muted)', maxWidth: '450px', margin: '0 auto 1.5rem auto' }}>
-            Solicita tu tarjeta física o digital en el mostrador de nuestra cafetería para vincularla a tu correo ({profile?.email}).
+          <p style={{ color: 'var(--color-text-secondary)', maxWidth: '450px', margin: '0 auto 1.5rem auto', fontSize: '0.92rem' }}>
+            Solicita tu tarjeta física o digital en el mostrador para asociarla a tu correo ({profile?.email}).
           </p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', marginBottom: '2.5rem' }}>
-          {/* Tarjeta Digital Visual */}
+          {/* Tarjeta Digital Visual NexoCard */}
           <div>
             <div 
-              className="card-preview"
               style={{
-                borderRadius: '1.25rem',
-                padding: '2rem',
+                borderRadius: '20px',
+                padding: '1.85rem',
                 background: card.estado === 'BLOQUEADA'
-                  ? 'linear-gradient(135deg, #4B5563 0%, #1F2937 100%)'
-                  : 'linear-gradient(135deg, #2B1810 0%, #4A2810 50%, #74512D 100%)',
+                  ? 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)'
+                  : 'linear-gradient(135deg, #020617 0%, #0F172A 45%, #1D4ED8 100%)',
                 color: '#fff',
-                boxShadow: '0 20px 35px -10px rgba(43, 24, 16, 0.4)',
+                boxShadow: '0 20px 40px -10px rgba(15, 23, 42, 0.45)',
                 position: 'relative',
                 overflow: 'hidden',
                 aspectRatio: '1.586',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                border: '1px solid rgba(212, 175, 55, 0.3)'
+                border: '1px solid rgba(255, 255, 255, 0.15)'
               }}
             >
-              {/* Card Gold Trim Watermark */}
+              {/* Circuit glow watermark */}
               <div style={{
                 position: 'absolute',
-                top: '-40px',
-                right: '-40px',
-                width: '180px',
-                height: '180px',
+                top: '-30px',
+                right: '-30px',
+                width: '160px',
+                height: '160px',
                 borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0) 70%)',
+                background: 'radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, transparent 70%)',
                 pointerEvents: 'none'
               }} />
 
-              {/* Top Row: Brand & Contactless */}
+              {/* Top Row: NexoCard Logo & Contactless */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Coffee size={24} style={{ color: 'var(--amber-gold)' }} />
-                  <span style={{ fontFamily: 'Playfair Display, serif', fontWeight: '700', fontSize: '1.15rem', letterSpacing: '0.05em' }}>
-                    CAFETERÍA PREMIUM
-                  </span>
-                </div>
+                <img 
+                  src={nexocardLogo} 
+                  alt="NexoCard" 
+                  style={{ height: '24px', width: 'auto', filter: 'brightness(0) invert(1)' }} 
+                />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Wifi size={20} style={{ transform: 'rotate(90deg)', opacity: 0.8 }} />
+                  <Wifi size={18} style={{ transform: 'rotate(90deg)', opacity: 0.8 }} />
                   {card.estado === 'BLOQUEADA' && (
                     <span style={{ 
-                      backgroundColor: '#EF4444', 
+                      backgroundColor: 'var(--color-danger-600)', 
                       color: '#fff', 
-                      fontSize: '0.7rem', 
-                      fontWeight: '800', 
-                      padding: '0.2rem 0.6rem', 
+                      fontSize: '0.68rem', 
+                      fontWeight: 800, 
+                      padding: '0.15rem 0.55rem', 
                       borderRadius: '9999px',
                       textTransform: 'uppercase'
                     }}>
@@ -265,37 +275,37 @@ export default function PerfilClientePage() {
               {/* Middle Row: EMV Chip & Balance */}
               <div style={{ zIndex: 1 }}>
                 <div style={{ 
-                  width: '42px', 
-                  height: '32px', 
-                  backgroundColor: '#D4AF37', 
+                  width: '40px', 
+                  height: '30px', 
+                  backgroundColor: '#E2E8F0', 
                   borderRadius: '6px', 
-                  marginBottom: '1.25rem',
-                  background: 'linear-gradient(135deg, #F59E0B 0%, #D4AF37 50%, #B45309 100%)',
-                  boxShadow: 'inset 0 0 4px rgba(0,0,0,0.3)',
-                  border: '1px solid #78350F'
+                  marginBottom: '1rem',
+                  background: 'linear-gradient(135deg, #CBD5E1 0%, #94A3B8 100%)',
+                  boxShadow: 'inset 0 0 3px rgba(0,0,0,0.4)',
+                  border: '1px solid rgba(255,255,255,0.4)'
                 }} />
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8 }}>
+                <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.75 }}>
                   Saldo Disponible
                 </div>
-                <div style={{ fontSize: '2.25rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#FEF3C7' }}>
+                <div className="text-mono" style={{ fontSize: '2.2rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#FFFFFF' }}>
                   {formatMoney(card.saldo)}
                 </div>
               </div>
 
-              {/* Bottom Row: Code & Holder */}
+              {/* Bottom Row: Code & Tenant info */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 1 }}>
                 <div>
-                  <div style={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: '0.18em', opacity: 0.95 }}>
+                  <div className="text-mono" style={{ fontSize: '1.1rem', letterSpacing: '0.15em', fontWeight: 700 }}>
                     {card.codigo || '•••• •••• ••••'}
                   </div>
-                  <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', opacity: 0.7, marginTop: '0.25rem' }}>
-                    {card.titular_nombre || profile?.username}
+                  <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', opacity: 0.7, marginTop: '2px' }}>
+                    {card.titular_nombre || profile?.username} · Cafetería Premium
                   </div>
                 </div>
                 {card.fecha_expiracion && (
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', opacity: 0.6 }}>Vence</div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: '600' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>
                       {new Date(card.fecha_expiracion).toLocaleDateString('es-GT', { month: '2-digit', year: '2-digit' })}
                     </div>
                   </div>
@@ -303,14 +313,14 @@ export default function PerfilClientePage() {
               </div>
             </div>
 
-            {/* Acciones Rápidas Tarjeta */}
+            {/* Acciones Rápidas */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginTop: '1.25rem' }}>
               <button 
                 onClick={() => setShowQrModal(true)}
                 className="btn btn-secondary"
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', padding: '0.85rem 0.5rem', fontSize: '0.8rem' }}
               >
-                <QrCode size={20} style={{ color: 'var(--amber-gold)' }} />
+                <QrCode size={18} style={{ color: 'var(--color-blue-600)' }} />
                 <span>Mostrar QR</span>
               </button>
 
@@ -320,7 +330,7 @@ export default function PerfilClientePage() {
                 className="btn btn-secondary"
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', padding: '0.85rem 0.5rem', fontSize: '0.8rem' }}
               >
-                <Download size={20} style={{ color: 'var(--amber-gold)' }} />
+                <Download size={18} style={{ color: 'var(--color-blue-600)' }} />
                 <span>PDF Tarjeta</span>
               </button>
 
@@ -329,7 +339,7 @@ export default function PerfilClientePage() {
                 className="btn btn-secondary"
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', padding: '0.85rem 0.5rem', fontSize: '0.8rem' }}
               >
-                <KeyRound size={20} style={{ color: 'var(--amber-gold)' }} />
+                <KeyRound size={18} style={{ color: 'var(--color-blue-600)' }} />
                 <span>Cambiar PIN</span>
               </button>
             </div>
@@ -339,41 +349,41 @@ export default function PerfilClientePage() {
           <div className="card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                <ShieldCheck size={24} style={{ color: '#059669' }} />
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--espresso-dark)', margin: 0 }}>
-                  Seguridad y Ajustes
+                <ShieldCheck size={24} style={{ color: 'var(--color-success-600)' }} />
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+                  Seguridad de tu Tarjeta
                 </h3>
               </div>
 
               <div style={{ 
                 padding: '1rem', 
-                borderRadius: '0.75rem', 
-                backgroundColor: card.estado === 'ACTIVA' ? '#ECFDF5' : '#FEF2F2',
-                border: `1px solid ${card.estado === 'ACTIVA' ? '#A7F3D0' : '#FECACA'}`,
-                marginBottom: '1.5rem'
+                borderRadius: '14px', 
+                backgroundColor: card.estado === 'ACTIVA' ? 'var(--color-success-100)' : 'var(--color-danger-100)',
+                border: `1px solid ${card.estado === 'ACTIVA' ? 'rgba(22,163,74,0.2)' : 'rgba(220,38,38,0.2)'}`,
+                marginBottom: '1.25rem'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
-                    <div style={{ fontWeight: '700', color: card.estado === 'ACTIVA' ? '#065F46' : '#991B1B' }}>
+                    <div style={{ fontWeight: 700, color: card.estado === 'ACTIVA' ? 'var(--color-success-600)' : 'var(--color-danger-600)' }}>
                       Estado: {card.estado}
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: card.estado === 'ACTIVA' ? '#047857' : '#B91C1C', marginTop: '0.2rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>
                       {card.estado === 'ACTIVA' 
-                        ? 'Tu tarjeta está lista para pagar en caja presentando el código o QR.' 
-                        : 'Tu tarjeta está bloqueada. No se podrán realizar consumos hasta que la desbloquees.'}
+                        ? 'Lista para pagar en caja presentando el código o QR.' 
+                        : 'Tu tarjeta está bloqueada temporalmente por seguridad.'}
                     </div>
                   </div>
                   <div>
                     {card.estado === 'ACTIVA' ? (
-                      <Unlock size={24} style={{ color: '#059669' }} />
+                      <Unlock size={22} style={{ color: 'var(--color-success-600)' }} />
                     ) : (
-                      <Lock size={24} style={{ color: '#DC2626' }} />
+                      <Lock size={22} style={{ color: 'var(--color-danger-600)' }} />
                     )}
                   </div>
                 </div>
               </div>
 
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: '1.5' }}>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.86rem', lineHeight: '1.5' }}>
                 Si perdiste tu tarjeta física o detectas actividad sospechosa, puedes congelarla temporalmente de inmediato.
               </p>
             </div>
@@ -389,12 +399,12 @@ export default function PerfilClientePage() {
               ) : card.estado === 'ACTIVA' ? (
                 <>
                   <Lock size={18} />
-                  Congelar / Bloquear Tarjeta
+                  <span>Congelar / Bloquear Tarjeta</span>
                 </>
               ) : (
                 <>
                   <Unlock size={18} />
-                  Descongelar Tarjeta
+                  <span>Descongelar Tarjeta</span>
                 </>
               )}
             </button>
@@ -402,26 +412,26 @@ export default function PerfilClientePage() {
         </div>
       )}
 
-      {/* Historial de Movimientos de la Tarjeta */}
+      {/* Historial de Movimientos */}
       {card && (
         <div className="card" style={{ padding: '1.75rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--espresso-dark)', margin: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
               Movimientos Recientes
             </h3>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              Mostrando últimas transacciones
+            <span style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)' }}>
+              Últimas transacciones registradas
             </span>
           </div>
 
           {!card.transacciones || card.transacciones.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-              <Clock size={40} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
+            <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--color-text-secondary)' }}>
+              <Clock size={36} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
               <p>No tienes transacciones registradas aún en esta tarjeta.</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table className="table" style={{ width: '100%', textAlign: 'left' }}>
+            <div className="table-container">
+              <table className="table">
                 <thead>
                   <tr>
                     <th>Fecha</th>
@@ -433,32 +443,22 @@ export default function PerfilClientePage() {
                 <tbody>
                   {card.transacciones.map((tx) => (
                     <tr key={tx.id}>
-                      <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                      <td style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
                         {formatFecha(tx.fecha)}
                       </td>
                       <td>
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.35rem',
-                          padding: '0.2rem 0.6rem',
-                          borderRadius: '9999px',
-                          fontSize: '0.75rem',
-                          fontWeight: '700',
-                          backgroundColor: tx.tipo === 'RECARGA' ? '#ECFDF5' : '#FEE2E2',
-                          color: tx.tipo === 'RECARGA' ? '#065F46' : '#991B1B'
-                        }}>
-                          {tx.tipo === 'RECARGA' ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                        <span className={`badge ${tx.tipo === 'RECARGA' ? 'badge-success' : 'badge-danger'}`}>
+                          <span className="badge-dot"></span>
                           {tx.tipo}
                         </span>
                       </td>
-                      <td style={{ 
-                        fontWeight: '700', 
-                        color: tx.tipo === 'RECARGA' ? '#059669' : '#DC2626' 
+                      <td className="text-mono" style={{ 
+                        fontWeight: 700, 
+                        color: tx.tipo === 'RECARGA' ? 'var(--color-success-600)' : 'var(--color-danger-600)' 
                       }}>
                         {tx.tipo === 'RECARGA' ? '+' : '-'}{formatMoney(tx.monto)}
                       </td>
-                      <td style={{ fontWeight: '600', color: 'var(--espresso-dark)' }}>
+                      <td className="text-mono" style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
                         {formatMoney(tx.saldo_resultante)}
                       </td>
                     </tr>
@@ -478,7 +478,7 @@ export default function PerfilClientePage() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          backgroundColor: 'rgba(2, 6, 23, 0.65)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -486,31 +486,31 @@ export default function PerfilClientePage() {
           backdropFilter: 'blur(4px)',
           padding: '1rem'
         }}>
-          <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '2rem', textAlign: 'center', animation: 'scaleIn 0.2s ease-out' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--espresso-dark)', margin: '0 0 0.5rem 0' }}>
+          <div className="card" style={{ maxWidth: '380px', width: '100%', padding: '2rem', textAlign: 'center', animation: 'fadeIn 0.2s ease-out' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 0.5rem 0' }}>
               Código QR de Pago
             </h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              Presenta este código al cajero para escanear y aplicar tu cobro o recarga.
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+              Presenta este código al cajero de Cafetería Premium para pagar o recargar.
             </p>
 
             <div style={{ 
               display: 'inline-block', 
               padding: '1.25rem', 
-              borderRadius: '1rem', 
+              borderRadius: '16px', 
               backgroundColor: '#fff', 
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              border: '1px solid var(--border-color)',
-              marginBottom: '1.5rem'
+              boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+              border: '1px solid var(--color-border)',
+              marginBottom: '1.25rem'
             }}>
               <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(card.codigo)}`} 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(card.codigo)}`} 
                 alt="QR Tarjeta" 
-                style={{ width: '220px', height: '220px', display: 'block' }}
+                style={{ width: '200px', height: '200px', display: 'block' }}
               />
             </div>
 
-            <div style={{ fontFamily: 'monospace', fontSize: '1.25rem', fontWeight: '700', letterSpacing: '0.15em', marginBottom: '1.5rem', color: 'var(--espresso-dark)' }}>
+            <div className="text-mono" style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '0.15em', marginBottom: '1.5rem', color: 'var(--color-text-primary)' }}>
               {card.codigo}
             </div>
 
@@ -533,7 +533,7 @@ export default function PerfilClientePage() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          backgroundColor: 'rgba(2, 6, 23, 0.65)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -541,23 +541,23 @@ export default function PerfilClientePage() {
           backdropFilter: 'blur(4px)',
           padding: '1rem'
         }}>
-          <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '2rem', animation: 'scaleIn 0.2s ease-out' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--espresso-dark)', margin: '0 0 0.5rem 0' }}>
+          <div className="card" style={{ maxWidth: '380px', width: '100%', padding: '2rem', animation: 'fadeIn 0.2s ease-out' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 0.5rem 0' }}>
               Cambiar Código PIN
             </h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-              Ingresa un código numérico de 4 dígitos para autorizar pagos en el mostrador.
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+              Ingresa un código de 4 dígitos para autorizar consumos.
             </p>
 
             {pinError && (
               <div style={{ 
-                backgroundColor: '#FEF2F2', 
-                border: '1px solid #FECACA', 
-                color: '#991B1B', 
+                backgroundColor: 'var(--color-danger-100)', 
+                border: '1px solid rgba(220,38,38,0.2)', 
+                color: 'var(--color-danger-600)', 
                 padding: '0.75rem', 
-                borderRadius: '0.5rem', 
+                borderRadius: '10px', 
                 marginBottom: '1rem',
-                fontSize: '0.85rem'
+                fontSize: '0.82rem'
               }}>
                 {pinError}
               </div>
@@ -572,9 +572,9 @@ export default function PerfilClientePage() {
                   pattern="\d{4}"
                   value={pinNuevo}
                   onChange={(e) => setPinNuevo(e.target.value.replace(/\D/g, ''))}
-                  className="form-control"
+                  className="form-control text-mono"
                   placeholder="••••"
-                  style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.5em' }}
+                  style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.4em' }}
                   required
                 />
               </div>
@@ -587,9 +587,9 @@ export default function PerfilClientePage() {
                   pattern="\d{4}"
                   value={pinConfirm}
                   onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ''))}
-                  className="form-control"
+                  className="form-control text-mono"
                   placeholder="••••"
-                  style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.5em' }}
+                  style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.4em' }}
                   required
                 />
               </div>

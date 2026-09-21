@@ -18,7 +18,8 @@ import {
   Clock, 
   ChevronRight,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Activity
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -63,7 +64,7 @@ export default function DashboardPage() {
     return dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
   };
 
-  const greetingName = user?.first_name || user?.username || 'Gerente';
+  const greetingName = user?.first_name || user?.username || 'Administrador';
 
   // Barras de actividad del día
   const ventasNum = Number(data?.ventas_hoy || 0);
@@ -72,7 +73,7 @@ export default function DashboardPage() {
   const ventasPct = Math.round((ventasNum / totalFlujo) * 100);
   const consumosPct = Math.round((consumosNum / totalFlujo) * 100);
 
-  // Mock de 7 días representativo con datos reales
+  // 7 días
   const daysMock = [
     { day: 'Lun', val: ventasNum * 0.7 },
     { day: 'Mar', val: ventasNum * 0.9 },
@@ -87,15 +88,15 @@ export default function DashboardPage() {
   if (loading && !data) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <RefreshCw size={36} className="spin-slow" style={{ color: 'var(--color-gold-500)', marginBottom: '1rem' }} />
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>Cargando panel operativo...</p>
+        <RefreshCw size={36} className="spin-slow" style={{ color: 'var(--color-blue-600)', marginBottom: '1rem' }} />
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>Cargando panel de control...</p>
       </div>
     );
   }
 
   return (
     <div>
-      {/* 1. Encabezado Limpio del Dashboard (Brief Sec. 7) */}
+      {/* 1. Encabezado Limpio NexoCard */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -107,17 +108,31 @@ export default function DashboardPage() {
         borderBottom: '1px solid var(--color-border)'
       }}>
         <div>
-          <h1 className="page-title" style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--color-text-primary)', margin: '0 0 0.35rem 0' }}>
-            Panel Gerencial
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
+            <h1 className="page-title" style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+              Panel de Control
+            </h1>
+            <span style={{ 
+              backgroundColor: 'var(--color-blue-100)', 
+              color: 'var(--color-blue-700)', 
+              fontSize: '0.72rem', 
+              fontWeight: 700, 
+              padding: '0.2rem 0.55rem', 
+              borderRadius: '9999px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em'
+            }}>
+              Cafetería Premium
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.88rem', color: 'var(--color-text-secondary)' }}>
             <span>Resumen operativo · {getFormattedDate()}</span>
             <span style={{ color: 'var(--color-border)' }}>•</span>
-            <span style={{ color: 'var(--color-espresso-700)', fontWeight: '500' }}>Buenos días, {greetingName}.</span>
+            <span style={{ color: 'var(--color-navy-700)', fontWeight: '500' }}>Buenos días, {greetingName}.</span>
           </div>
         </div>
 
-        {/* Jerarquía de Acciones (Brief Sec. 8): Primary dorado vs Secondary neutro */}
+        {/* CTAs NexoCard */}
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           <button 
             onClick={() => navigate('/terminal')}
@@ -140,7 +155,7 @@ export default function DashboardPage() {
       {error && (
         <div style={{ 
           backgroundColor: 'var(--color-danger-100)', 
-          border: '1px solid rgba(198,40,40,0.2)', 
+          border: '1px solid rgba(220,38,38,0.2)', 
           color: 'var(--color-danger-600)', 
           padding: '1rem', 
           borderRadius: '12px', 
@@ -154,7 +169,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 2. Grid de 4 KPIs con Contexto Semántico (Brief Sec. 9 & 10) */}
+      {/* 2. Grid de 4 KPIs NexoCard */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
@@ -165,7 +180,7 @@ export default function DashboardPage() {
         <div className="kpi-card">
           <div className="kpi-header">
             <span className="kpi-label">Ventas de Hoy</span>
-            <div className="kpi-icon-pill" style={{ backgroundColor: 'var(--color-gold-soft)', color: 'var(--color-gold-600)' }}>
+            <div className="kpi-icon-pill" style={{ backgroundColor: 'var(--color-blue-100)', color: 'var(--color-blue-600)' }}>
               <TrendingUp size={16} />
             </div>
           </div>
@@ -182,7 +197,7 @@ export default function DashboardPage() {
         <div className="kpi-card">
           <div className="kpi-header">
             <span className="kpi-label">Total Tarjetas</span>
-            <div className="kpi-icon-pill" style={{ backgroundColor: 'var(--color-surface-soft)', color: 'var(--color-espresso-700)' }}>
+            <div className="kpi-icon-pill" style={{ backgroundColor: 'var(--color-surface-soft)', color: 'var(--color-navy-700)' }}>
               <CreditCard size={16} />
             </div>
           </div>
@@ -204,7 +219,7 @@ export default function DashboardPage() {
         <div className="kpi-card">
           <div className="kpi-header">
             <span className="kpi-label">Consumos Hoy</span>
-            <div className="kpi-icon-pill" style={{ backgroundColor: 'var(--color-surface-soft)', color: 'var(--color-espresso-800)' }}>
+            <div className="kpi-icon-pill" style={{ backgroundColor: 'var(--color-cyan-100)', color: 'var(--color-cyan-600)' }}>
               <ShoppingBag size={16} />
             </div>
           </div>
@@ -216,7 +231,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* KPI 4: Saldo en Circulación (Verde semántico de saldo disponible) */}
+        {/* KPI 4: Saldo en Circulación */}
         <div className="kpi-card">
           <div className="kpi-header">
             <span className="kpi-label">Saldo en Circulación</span>
@@ -228,26 +243,26 @@ export default function DashboardPage() {
             {formatMoney(data?.saldo_circulante)}
           </div>
           <div className="kpi-context">
-            <span>Disponible en tarjetas de clientes</span>
+            <span>Disponible en tarjetas activas</span>
           </div>
         </div>
       </div>
 
-      {/* 3. Distribución 8 Columnas / 4 Columnas (Brief Sec. 11, 12, 13, 14, 15, 16) */}
+      {/* 3. Distribución 8 Columnas / 4 Columnas */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem', alignItems: 'start' }}>
         
         {/* === COLUMNA IZQUIERDA (8 Columnas) === */}
         <div style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
-          {/* Card: Actividad del Día (Brief Sec. 12) */}
+          {/* Card: Actividad del Día */}
           <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--color-text-primary)', margin: 0 }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
                   Actividad del Día
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-text-secondary)' }}>
-                  Comparación proporcional entre ingresos recibidos y canjes en caja
+                  Ingresos recaudados vs canjes en mostrador
                 </p>
               </div>
               <span className="badge badge-success">
@@ -256,20 +271,20 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            {/* Barra Visual Proporcional */}
-            <div style={{ height: '14px', borderRadius: '999px', backgroundColor: 'var(--color-surface-soft)', overflow: 'hidden', display: 'flex', marginBottom: '1.25rem' }}>
+            {/* Barra Visual Proporcional Azul / Navy */}
+            <div style={{ height: '12px', borderRadius: '999px', backgroundColor: 'var(--color-surface-soft)', overflow: 'hidden', display: 'flex', marginBottom: '1.25rem' }}>
               <div 
                 style={{ 
                   width: `${ventasPct}%`, 
-                  backgroundColor: 'var(--color-gold-500)', 
+                  backgroundColor: 'var(--color-blue-600)', 
                   transition: 'width 0.4s ease' 
                 }} 
-                title={`Ventas: ${ventasPct}%`}
+                title={`Ingresos: ${ventasPct}%`}
               />
               <div 
                 style={{ 
                   width: `${consumosPct}%`, 
-                  backgroundColor: 'var(--color-espresso-800)', 
+                  backgroundColor: 'var(--color-navy-800)', 
                   transition: 'width 0.4s ease' 
                 }} 
                 title={`Consumos: ${consumosPct}%`}
@@ -280,41 +295,41 @@ export default function DashboardPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
               <div style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-surface-soft)', border: '1px solid var(--color-border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-gold-500)' }}></span>
-                  <span style={{ fontSize: '0.78rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-blue-600)' }}></span>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
                     Ingresos Recibidos
                   </span>
                 </div>
-                <div className="text-mono" style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--color-text-primary)' }}>
+                <div className="text-mono" style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>
                   {formatMoney(data?.ventas_hoy)}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>
-                  Dinero nuevo ingresado al sistema
+                  Nuevas emisiones y recargas
                 </div>
               </div>
 
               <div style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--color-surface-soft)', border: '1px solid var(--color-border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-espresso-800)' }}></span>
-                  <span style={{ fontSize: '0.78rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
-                    Consumos en Cafetería
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-navy-800)' }}></span>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
+                    Consumos / Canjes
                   </span>
                 </div>
-                <div className="text-mono" style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--color-text-primary)' }}>
+                <div className="text-mono" style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>
                   {formatMoney(data?.consumos_hoy)}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>
-                  Saldo canjeado por bebidas y alimentos
+                  Saldo deducido por consumos
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Card: Rendimiento Últimos 7 Días con Mini-Gráfico (Brief Sec. 13) */}
+          {/* Card: Rendimiento Últimos 7 Días con Acentos Azul / Cian */}
           <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--color-text-primary)', margin: 0 }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
                   Rendimiento — Últimos 7 Días
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-text-secondary)' }}>
@@ -353,7 +368,7 @@ export default function DashboardPage() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '1.25rem' }}>
-              <span className="text-mono" style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--color-text-primary)' }}>
+              <span className="text-mono" style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>
                 {formatMoney(data?.ventas_ultimos_7_dias || data?.ventas_hoy)}
               </span>
               <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--color-success-600)' }}>
@@ -361,7 +376,7 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            {/* Mini Gráfico de Barras Estilizado */}
+            {/* Mini Gráfico de Barras con Acento Azul/Cian */}
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '110px', paddingTop: '1rem', borderTop: '1px solid var(--color-border-light)' }}>
               {daysMock.map((d, i) => {
                 const heightPct = Math.max(Math.round((d.val / maxBarVal) * 100), 12);
@@ -370,16 +385,16 @@ export default function DashboardPage() {
                   <div key={d.day} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', flex: 1 }}>
                     <div 
                       style={{ 
-                        width: '26px', 
+                        width: '24px', 
                         height: `${heightPct}%`, 
-                        backgroundColor: isToday ? 'var(--color-gold-500)' : 'rgba(96, 57, 22, 0.25)', 
+                        backgroundColor: isToday ? 'var(--color-blue-600)' : 'rgba(59, 130, 246, 0.25)', 
                         borderRadius: '6px 6px 2px 2px',
                         transition: 'height 0.3s ease',
-                        boxShadow: isToday ? '0 2px 8px rgba(226, 180, 32, 0.3)' : 'none'
+                        boxShadow: isToday ? '0 2px 8px rgba(37, 99, 235, 0.35)' : 'none'
                       }}
                       title={`${d.day}: Q${d.val.toFixed(2)}`}
                     />
-                    <span style={{ fontSize: '0.72rem', fontWeight: isToday ? '700' : '500', color: isToday ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: isToday ? '700' : '500', color: isToday ? 'var(--color-blue-600)' : 'var(--color-text-muted)' }}>
                       {d.day}
                     </span>
                   </div>
@@ -392,9 +407,9 @@ export default function DashboardPage() {
         {/* === COLUMNA DERECHA (4 Columnas) === */}
         <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
-          {/* Card: Acciones Rápidas (Brief Sec. 14) */}
+          {/* Card: Acciones Rápidas */}
           <div className="card" style={{ padding: '1.25rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--color-text-primary)', marginBottom: '0.85rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '0.85rem' }}>
               Acciones Rápidas
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
@@ -404,8 +419,8 @@ export default function DashboardPage() {
                     <Store size={18} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--color-text-primary)' }}>Terminal POS</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Cobrar y recargar en mostrador</div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>Terminal POS</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Cobrar y recargar saldo</div>
                   </div>
                 </div>
                 <ChevronRight size={16} style={{ color: 'var(--color-text-muted)' }} />
@@ -413,12 +428,12 @@ export default function DashboardPage() {
 
               <div onClick={() => navigate('/tarjetas?accion=nueva')} className="quick-action-card">
                 <div className="quick-action-left">
-                  <div className="quick-action-icon" style={{ color: 'var(--color-gold-600)' }}>
+                  <div className="quick-action-icon" style={{ color: 'var(--color-blue-600)' }}>
                     <PlusCircle size={18} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--color-text-primary)' }}>Emitir Tarjeta</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Nueva Gift Card con saldo inicial</div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>Emitir Tarjeta</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Nueva Gift Card prepago</div>
                   </div>
                 </div>
                 <ChevronRight size={16} style={{ color: 'var(--color-text-muted)' }} />
@@ -426,12 +441,12 @@ export default function DashboardPage() {
 
               <div onClick={() => navigate('/tarjetas')} className="quick-action-card">
                 <div className="quick-action-left">
-                  <div className="quick-action-icon">
+                  <div className="quick-action-icon" style={{ color: 'var(--color-cyan-600)' }}>
                     <Search size={18} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--color-text-primary)' }}>Buscar Tarjeta</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Consultar código, cliente o PIN</div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>Buscar Tarjeta</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Código, cliente o PIN</div>
                   </div>
                 </div>
                 <ChevronRight size={16} style={{ color: 'var(--color-text-muted)' }} />
@@ -443,8 +458,8 @@ export default function DashboardPage() {
                     <ReceiptText size={18} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--color-text-primary)' }}>Corte de Caja</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Arqueo de turnos y cierre diario</div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>Corte de Caja</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Arqueo de turnos y balance</div>
                   </div>
                 </div>
                 <ChevronRight size={16} style={{ color: 'var(--color-text-muted)' }} />
@@ -452,10 +467,10 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Card: Actividad Reciente (Brief Sec. 15) */}
+          {/* Card: Actividad Reciente */}
           <div className="card" style={{ padding: '1.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--color-text-primary)', margin: 0 }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
                 Actividad Reciente
               </h3>
               <Clock size={16} style={{ color: 'var(--color-text-muted)' }} />
@@ -470,7 +485,7 @@ export default function DashboardPage() {
                 {recentTx.map((tx) => (
                   <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: '1px solid var(--color-border-light)' }}>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', fontWeight: '700' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', fontWeight: 700 }}>
                         <span className={`badge ${tx.tipo === 'RECARGA' ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '0.65rem', padding: '0.15rem 0.45rem' }}>
                           {tx.tipo}
                         </span>
@@ -482,7 +497,7 @@ export default function DashboardPage() {
                         {tx.operador_nombre || 'Caja'} · {new Date(tx.fecha).toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
-                    <div className="text-mono" style={{ fontWeight: '700', fontSize: '0.88rem', color: tx.tipo === 'RECARGA' ? 'var(--color-success-600)' : 'var(--color-danger-600)' }}>
+                    <div className="text-mono" style={{ fontWeight: 700, fontSize: '0.88rem', color: tx.tipo === 'RECARGA' ? 'var(--color-success-600)' : 'var(--color-danger-600)' }}>
                       {tx.tipo === 'RECARGA' ? '+' : '-'}{formatMoney(tx.monto)}
                     </div>
                   </div>
@@ -499,19 +514,19 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Card: Estado Operativo (Brief Sec. 16) */}
+          {/* Card: Estado Operativo NexoCard */}
           <div className="card-soft" style={{ padding: '1rem 1.25rem' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-secondary)', marginBottom: '0.65rem' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-secondary)', marginBottom: '0.65rem' }}>
               Estado Operativo
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.82rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-success-500)' }}></span>
-                <span>Terminal POS operativo en línea</span>
+                <span>NexoCard POS operativo en línea</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-gold-500)' }}></span>
-                <span>Turno de caja abierto</span>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-blue-500)' }}></span>
+                <span>Turno de caja abierto (Cafetería Premium)</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.76rem' }}>
                 <Clock size={12} />

@@ -99,25 +99,35 @@ export default function TransaccionesPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `auditoria_transacciones_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `nexocard_auditoria_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     link.remove();
   };
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--color-border)' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-            <span style={{ fontSize: '1.75rem' }}>📜</span>
-            <h1 style={{ fontSize: '1.85rem', fontWeight: '700', color: 'var(--espresso-dark)', margin: 0 }}>
-              Auditoría de Transacciones
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
+            <h1 className="page-title" style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+              Auditoría y Trazabilidad
             </h1>
+            <span style={{ 
+              backgroundColor: 'var(--color-blue-100)', 
+              color: 'var(--color-blue-700)', 
+              fontSize: '0.72rem', 
+              fontWeight: 700, 
+              padding: '0.2rem 0.55rem', 
+              borderRadius: '9999px',
+              textTransform: 'uppercase'
+            }}>
+              NexoCard Security
+            </span>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
-            Registro global inmutable de consumos, recargas y operaciones del sistema
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.88rem', margin: 0 }}>
+            Registro global inmutable de consumos, recargas y operaciones en Cafetería Premium
           </p>
         </div>
 
@@ -126,36 +136,34 @@ export default function TransaccionesPage() {
             onClick={handleExportCSV} 
             disabled={!transacciones.length}
             className="btn btn-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
             <Download size={16} />
-            Exportar CSV
+            <span>Exportar CSV</span>
           </button>
           <button 
             onClick={() => fetchTransacciones(currentPage)} 
             disabled={loading}
             className="btn btn-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
             <RefreshCw size={16} className={loading ? 'spin-slow' : ''} />
-            Actualizar
+            <span>Actualizar</span>
           </button>
         </div>
       </div>
 
       {error && (
         <div style={{ 
-          backgroundColor: '#FEF2F2', 
-          border: '1px solid #FECACA', 
-          color: '#991B1B', 
+          backgroundColor: 'var(--color-danger-100)', 
+          border: '1px solid rgba(220,38,38,0.2)', 
+          color: 'var(--color-danger-600)', 
           padding: '1rem', 
-          borderRadius: '0.75rem', 
+          borderRadius: '14px', 
           marginBottom: '1.5rem',
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem'
         }}>
-          <AlertCircle size={20} style={{ color: '#EF4444', flexShrink: 0 }} />
+          <AlertCircle size={20} />
           <span>{error}</span>
         </div>
       )}
@@ -200,39 +208,39 @@ export default function TransaccionesPage() {
             <button type="button" onClick={handleClearFilters} className="btn btn-secondary">
               Limpiar
             </button>
-            <button type="submit" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button type="submit" className="btn btn-primary">
               <Filter size={16} />
-              Filtrar
+              <span>Filtrar</span>
             </button>
           </div>
         </form>
       </div>
 
-      {/* Tabla de Resultados */}
+      {/* Tabla de Auditoría */}
       <div className="card" style={{ padding: '1.5rem', overflow: 'hidden' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <div style={{ fontWeight: '600', color: 'var(--espresso-dark)' }}>
-            Total registros encontrados: <span style={{ color: 'var(--amber-gold)', fontWeight: '800' }}>{totalCount}</span>
+          <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
+            Registros encontrados: <span className="text-mono" style={{ color: 'var(--color-blue-600)', fontWeight: 800 }}>{totalCount}</span>
           </div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)' }}>
             Página {currentPage} de {totalPages}
           </div>
         </div>
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-            <RefreshCw size={36} className="spin-slow" style={{ color: 'var(--amber-gold)' }} />
-            <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>Cargando registros de auditoría...</p>
+            <RefreshCw size={36} className="spin-slow" style={{ color: 'var(--color-blue-600)' }} />
+            <p style={{ marginTop: '0.75rem', color: 'var(--color-text-secondary)' }}>Cargando registros de auditoría...</p>
           </div>
         ) : transacciones.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
-            <Receipt size={48} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
+          <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--color-text-secondary)' }}>
+            <Receipt size={40} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
             <p>No se encontraron transacciones con los criterios seleccionados.</p>
           </div>
         ) : (
           <>
-            <div style={{ overflowX: 'auto' }}>
-              <table className="table" style={{ width: '100%', textAlign: 'left' }}>
+            <div className="table-container">
+              <table className="table">
                 <thead>
                   <tr>
                     <th>Fecha & Hora</th>
@@ -247,53 +255,43 @@ export default function TransaccionesPage() {
                 <tbody>
                   {transacciones.map((tx) => (
                     <tr key={tx.id}>
-                      <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                      <td style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                         {formatFecha(tx.fecha)}
                       </td>
                       <td>
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.35rem',
-                          padding: '0.2rem 0.6rem',
-                          borderRadius: '9999px',
-                          fontSize: '0.75rem',
-                          fontWeight: '700',
-                          backgroundColor: tx.tipo === 'RECARGA' ? '#ECFDF5' : '#FEE2E2',
-                          color: tx.tipo === 'RECARGA' ? '#065F46' : '#991B1B'
-                        }}>
-                          {tx.tipo === 'RECARGA' ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                        <span className={`badge ${tx.tipo === 'RECARGA' ? 'badge-success' : 'badge-danger'}`}>
+                          <span className="badge-dot"></span>
                           {tx.tipo}
                         </span>
                       </td>
                       <td>
-                        <div style={{ fontFamily: 'monospace', fontWeight: '700', color: 'var(--espresso-dark)' }}>
+                        <div className="text-mono" style={{ fontWeight: 700 }}>
                           {tx.tarjeta_codigo || 'Tarjeta'}
                         </div>
                         {tx.titular_nombre && (
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)' }}>
                             {tx.titular_nombre}
                           </div>
                         )}
                       </td>
-                      <td style={{ 
-                        fontWeight: '800', 
-                        color: tx.tipo === 'RECARGA' ? '#059669' : '#DC2626' 
+                      <td className="text-mono" style={{ 
+                        fontWeight: 800, 
+                        color: tx.tipo === 'RECARGA' ? 'var(--color-success-600)' : 'var(--color-danger-600)' 
                       }}>
                         {tx.tipo === 'RECARGA' ? '+' : '-'}{formatMoney(tx.monto)}
                       </td>
-                      <td style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                      <td className="text-mono" style={{ color: 'var(--color-text-secondary)' }}>
                         {formatMoney(tx.saldo_anterior)}
                       </td>
-                      <td style={{ fontWeight: '700', color: 'var(--espresso-dark)', fontSize: '0.95rem' }}>
+                      <td className="text-mono" style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
                         {formatMoney(tx.saldo_resultante)}
                       </td>
                       <td>
-                        <div style={{ fontWeight: '600', color: 'var(--espresso-dark)', fontSize: '0.85rem' }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
                           {tx.operador_nombre || 'Sistema'}
                         </div>
                         {tx.ip_address && (
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                          <div className="text-mono" style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
                             {tx.ip_address}
                           </div>
                         )}
@@ -306,26 +304,24 @@ export default function TransaccionesPage() {
 
             {/* Paginación */}
             {totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
                 <button 
                   onClick={() => fetchTransacciones(currentPage - 1)}
                   disabled={currentPage <= 1 || loading}
-                  className="btn btn-secondary"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.85rem' }}
+                  className="btn btn-secondary btn-sm"
                 >
                   <ChevronLeft size={16} />
-                  Anterior
+                  <span>Anterior</span>
                 </button>
-                <span style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--espresso-dark)' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
                   {currentPage} / {totalPages}
                 </span>
                 <button 
                   onClick={() => fetchTransacciones(currentPage + 1)}
                   disabled={currentPage >= totalPages || loading}
-                  className="btn btn-secondary"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.85rem' }}
+                  className="btn btn-secondary btn-sm"
                 >
-                  Siguiente
+                  <span>Siguiente</span>
                   <ChevronRight size={16} />
                 </button>
               </div>

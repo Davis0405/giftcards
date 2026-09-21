@@ -11,9 +11,8 @@ import {
   Mail, 
   ArrowDownRight, 
   ArrowUpRight, 
-  Calendar, 
   Receipt,
-  FileSpreadsheet
+  Store
 } from 'lucide-react';
 
 export default function CorteCajaPage() {
@@ -87,24 +86,34 @@ export default function CorteCajaPage() {
   if (loading && !data) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <RefreshCw size={36} className="spin-slow" style={{ color: 'var(--amber-gold)' }} />
+        <RefreshCw size={36} className="spin-slow" style={{ color: 'var(--color-blue-600)' }} />
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--color-border)' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-            <span style={{ fontSize: '1.75rem' }}>📋</span>
-            <h1 style={{ fontSize: '1.85rem', fontWeight: '700', color: 'var(--espresso-dark)', margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
+            <h1 className="page-title" style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
               Corte Diario de Caja
             </h1>
+            <span style={{ 
+              backgroundColor: 'var(--color-blue-100)', 
+              color: 'var(--color-blue-700)', 
+              fontSize: '0.72rem', 
+              fontWeight: 700, 
+              padding: '0.2rem 0.55rem', 
+              borderRadius: '9999px',
+              textTransform: 'uppercase'
+            }}>
+              Cafetería Premium
+            </span>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
-            Resumen en tiempo real de ventas, recargas y arqueo de turnos del día ({data?.fecha || new Date().toLocaleDateString('es-GT')})
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.88rem', margin: 0 }}>
+            Resumen operativo y arqueo de turnos del día ({data?.fecha || new Date().toLocaleDateString('es-GT')})
           </p>
         </div>
 
@@ -113,10 +122,9 @@ export default function CorteCajaPage() {
             onClick={fetchCorte} 
             disabled={loading}
             className="btn btn-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
             <RefreshCw size={16} className={loading ? 'spin-slow' : ''} />
-            Actualizar
+            <span>Actualizar</span>
           </button>
 
           {data?.caja_cerrada ? (
@@ -124,24 +132,24 @@ export default function CorteCajaPage() {
               display: 'flex', 
               alignItems: 'center', 
               gap: '0.5rem', 
-              padding: '0.65rem 1.25rem', 
-              borderRadius: '9999px',
-              backgroundColor: '#FEF3C7',
-              color: '#92400E',
-              fontWeight: '700',
-              border: '1px solid #FCD34D'
+              padding: '0.6rem 1.15rem', 
+              borderRadius: 'var(--radius-pill)',
+              backgroundColor: 'var(--color-warning-100)',
+              color: 'var(--color-warning-600)',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              border: '1px solid rgba(217, 119, 6, 0.25)'
             }}>
               <Lock size={16} />
-              Caja del Día Cerrada
+              <span>Caja del Día Cerrada</span>
             </div>
           ) : (
             <button 
               onClick={() => setShowConfirmModal(true)}
               className="btn btn-primary"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 12px rgba(180, 83, 9, 0.3)' }}
             >
               <Lock size={16} />
-              Efectuar Cierre de Caja
+              <span>Efectuar Cierre de Caja</span>
             </button>
           )}
         </div>
@@ -150,241 +158,134 @@ export default function CorteCajaPage() {
       {/* Alertas */}
       {successMsg && (
         <div style={{ 
-          backgroundColor: '#ECFDF5', 
-          border: '1px solid #A7F3D0', 
-          color: '#065F46', 
+          backgroundColor: 'var(--color-success-100)', 
+          border: '1px solid rgba(22,163,74,0.2)', 
+          color: 'var(--color-success-600)', 
           padding: '1rem', 
-          borderRadius: '0.75rem', 
+          borderRadius: '14px', 
           marginBottom: '1.5rem',
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem'
         }}>
-          <CheckCircle2 size={20} style={{ color: '#10B981', flexShrink: 0 }} />
+          <CheckCircle2 size={20} style={{ flexShrink: 0 }} />
           <span>{successMsg}</span>
         </div>
       )}
 
       {error && (
         <div style={{ 
-          backgroundColor: '#FEF2F2', 
-          border: '1px solid #FECACA', 
-          color: '#991B1B', 
+          backgroundColor: 'var(--color-danger-100)', 
+          border: '1px solid rgba(220,38,38,0.2)', 
+          color: 'var(--color-danger-600)', 
           padding: '1rem', 
-          borderRadius: '0.75rem', 
+          borderRadius: '14px', 
           marginBottom: '1.5rem',
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem'
         }}>
-          <AlertTriangle size={20} style={{ color: '#EF4444', flexShrink: 0 }} />
+          <AlertTriangle size={20} style={{ flexShrink: 0 }} />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Status Banner if closed */}
-      {data?.caja_cerrada && (
-        <div className="card" style={{ 
-          background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)', 
-          border: '1px solid #F59E0B',
-          marginBottom: '2rem',
-          padding: '1.25rem 1.75rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ 
-              width: '44px', 
-              height: '44px', 
-              borderRadius: '50%', 
-              backgroundColor: '#F59E0B', 
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <CheckCircle2 size={24} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#92400E', margin: '0 0 0.25rem 0' }}>
-                El corte definitivo de caja ya ha sido completado para hoy
-              </h3>
-              <p style={{ margin: 0, color: '#B45309', fontSize: '0.9rem' }}>
-                El archivo de arqueo y balance fue generado y enviado automáticamente por correo electrónico a la administración.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Métricas Principales */}
+      {/* Métricas Principales NexoCard */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
-        gap: '1.25rem', 
+        gap: '1rem', 
         marginBottom: '2rem' 
       }}>
         {/* Total Consumos / Ventas */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Consumos / Ventas Hoy
-            </span>
-            <div style={{ 
-              width: '40px', 
-              height: '40px', 
-              borderRadius: '10px', 
-              backgroundColor: '#FEE2E2', 
-              color: '#DC2626', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center' 
-            }}>
-              <ArrowDownRight size={22} />
+        <div className="card" style={{ padding: '1.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
+            <span className="kpi-label">Consumos Canjeados</span>
+            <div className="kpi-icon-pill" style={{ backgroundColor: 'var(--color-danger-100)', color: 'var(--color-danger-600)' }}>
+              <ArrowDownRight size={18} />
             </div>
           </div>
-          <div style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--espresso-dark)', marginBottom: '0.25rem' }}>
+          <div className="text-mono" style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '0.25rem' }}>
             {formatMoney(data?.ventas_totales)}
           </div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Cobros deducidos de Gift Cards
+          <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+            Cobros deducidos de tarjetas en caja
           </div>
         </div>
 
         {/* Total Recargas */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Recargas Ingresadas Hoy
-            </span>
-            <div style={{ 
-              width: '40px', 
-              height: '40px', 
-              borderRadius: '10px', 
-              backgroundColor: '#ECFDF5', 
-              color: '#059669', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center' 
-            }}>
-              <ArrowUpRight size={22} />
+        <div className="card" style={{ padding: '1.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
+            <span className="kpi-label">Recargas / Ingresos</span>
+            <div className="kpi-icon-pill" style={{ backgroundColor: 'var(--color-blue-100)', color: 'var(--color-blue-600)' }}>
+              <ArrowUpRight size={18} />
             </div>
           </div>
-          <div style={{ fontSize: '1.85rem', fontWeight: '800', color: '#059669', marginBottom: '0.25rem' }}>
+          <div className="text-mono" style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--color-blue-600)', marginBottom: '0.25rem' }}>
             {formatMoney(data?.recargas_totales)}
           </div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
             Efectivo/tarjeta ingresado a saldo
           </div>
         </div>
 
         {/* Total Transacciones */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Operaciones Realizadas
-            </span>
-            <div style={{ 
-              width: '40px', 
-              height: '40px', 
-              borderRadius: '10px', 
-              backgroundColor: '#EFF6FF', 
-              color: '#2563EB', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center' 
-            }}>
-              <Receipt size={22} />
+        <div className="card" style={{ padding: '1.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
+            <span className="kpi-label">Operaciones del Día</span>
+            <div className="kpi-icon-pill" style={{ backgroundColor: 'var(--color-cyan-100)', color: 'var(--color-cyan-600)' }}>
+              <Receipt size={18} />
             </div>
           </div>
-          <div style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--espresso-dark)', marginBottom: '0.25rem' }}>
+          <div className="text-mono" style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '0.25rem' }}>
             {data?.total_transacciones || 0}
           </div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
             Movimientos procesados en terminal
           </div>
         </div>
 
-        {/* Balance Neto */}
-        <div className="card" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, var(--card-bg) 0%, rgba(212, 175, 55, 0.08) 100%)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Flujo Neto Recibido
-            </span>
-            <div style={{ 
-              width: '40px', 
-              height: '40px', 
-              borderRadius: '10px', 
-              backgroundColor: '#FEF3C7', 
-              color: 'var(--amber-gold)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center' 
-            }}>
-              <DollarSign size={22} />
+        {/* Flujo Neto */}
+        <div className="card" style={{ padding: '1.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
+            <span className="kpi-label">Flujo Neto Ingresado</span>
+            <div className="kpi-icon-pill" style={{ backgroundColor: 'var(--color-success-100)', color: 'var(--color-success-600)' }}>
+              <DollarSign size={18} />
             </div>
           </div>
-          <div style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--espresso-dark)', marginBottom: '0.25rem' }}>
+          <div className="text-mono" style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--color-success-600)', marginBottom: '0.25rem' }}>
             {formatMoney((data?.recargas_totales || 0) - (data?.ventas_totales || 0))}
           </div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Diferencial (Recargas - Consumos)
+          <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+            Diferencial neto (Recargas - Canjes)
           </div>
         </div>
       </div>
 
-      {/* Desglose por Operador / Tipo */}
-      {data?.desglose && Object.keys(data.desglose).length > 0 && (
-        <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--espresso-dark)', marginBottom: '1rem' }}>
-            Desglose por Modalidad
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-            {Object.entries(data.desglose).map(([tipo, info]) => (
-              <div key={tipo} style={{ 
-                padding: '1rem', 
-                borderRadius: '0.5rem', 
-                backgroundColor: 'var(--bg-light)', 
-                border: '1px solid var(--border-color)' 
-              }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-                  {tipo}
-                </div>
-                <div style={{ fontSize: '1.35rem', fontWeight: '700', color: 'var(--espresso-dark)' }}>
-                  {formatMoney(info.total)}
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                  {info.cantidad} operaciones
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Lista de Transacciones de Hoy */}
+      {/* Tabla de Movimientos del Día */}
       <div className="card" style={{ padding: '1.5rem', overflow: 'hidden' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--espresso-dark)', margin: '0 0 0.25rem 0' }}>
-              Movimientos del Día
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+              Movimientos del Turno
             </h3>
-            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              Auditoría detallada de cada operación registrada hoy
+            <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.82rem' }}>
+              Auditoría detallada de cada operación registrada en Cafetería Premium hoy
             </p>
           </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
             Total: {data?.transacciones?.length || 0}
           </span>
         </div>
 
         {!data?.transacciones || data.transacciones.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-            <Receipt size={48} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--color-text-secondary)' }}>
+            <Receipt size={40} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
             <p>No se han registrado transacciones el día de hoy.</p>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="table" style={{ width: '100%', textAlign: 'left' }}>
+          <div className="table-container">
+            <table className="table">
               <thead>
                 <tr>
                   <th>Hora</th>
@@ -397,38 +298,28 @@ export default function CorteCajaPage() {
               <tbody>
                 {data.transacciones.map((tx) => (
                   <tr key={tx.id}>
-                    <td style={{ fontWeight: '500', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                    <td style={{ color: 'var(--color-text-secondary)', whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
                       {formatFecha(tx.fecha)}
                     </td>
                     <td>
-                      <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        padding: '0.25rem 0.65rem',
-                        borderRadius: '9999px',
-                        fontSize: '0.75rem',
-                        fontWeight: '700',
-                        backgroundColor: tx.tipo === 'RECARGA' ? '#ECFDF5' : '#FEE2E2',
-                        color: tx.tipo === 'RECARGA' ? '#065F46' : '#991B1B'
-                      }}>
-                        {tx.tipo === 'RECARGA' ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                      <span className={`badge ${tx.tipo === 'RECARGA' ? 'badge-success' : 'badge-danger'}`}>
+                        <span className="badge-dot"></span>
                         {tx.tipo}
                       </span>
                     </td>
                     <td>
-                      <span style={{ fontFamily: 'monospace', fontWeight: '600', color: 'var(--espresso-dark)' }}>
+                      <span className="text-mono" style={{ fontWeight: 700 }}>
                         {tx.tarjeta_codigo || 'Tarjeta'}
                       </span>
                     </td>
-                    <td style={{ 
-                      fontWeight: '700', 
-                      color: tx.tipo === 'RECARGA' ? '#059669' : '#DC2626' 
+                    <td className="text-mono" style={{ 
+                      fontWeight: 700, 
+                      color: tx.tipo === 'RECARGA' ? 'var(--color-success-600)' : 'var(--color-danger-600)' 
                     }}>
                       {tx.tipo === 'RECARGA' ? '+' : '-'}{formatMoney(tx.monto)}
                     </td>
-                    <td style={{ color: 'var(--text-muted)' }}>
-                      {tx.operador_nombre || 'Sistema'}
+                    <td style={{ color: 'var(--color-text-secondary)' }}>
+                      {tx.operador_nombre || 'Cajero'}
                     </td>
                   </tr>
                 ))}
@@ -446,7 +337,7 @@ export default function CorteCajaPage() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: 'rgba(2, 6, 23, 0.65)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -454,48 +345,48 @@ export default function CorteCajaPage() {
           backdropFilter: 'blur(4px)',
           padding: '1rem'
         }}>
-          <div className="card" style={{ maxWidth: '480px', width: '100%', padding: '2rem', animation: 'scaleIn 0.2s ease-out' }}>
+          <div className="card" style={{ maxWidth: '440px', width: '100%', padding: '2rem', animation: 'fadeIn 0.2s ease-out' }}>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{ 
-                width: '60px', 
-                height: '60px', 
+                width: '56px', 
+                height: '56px', 
                 borderRadius: '50%', 
-                backgroundColor: '#FEF3C7', 
-                color: '#D97706', 
+                backgroundColor: 'var(--color-warning-100)', 
+                color: 'var(--color-warning-600)', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
                 margin: '0 auto 1rem auto'
               }}>
-                <Lock size={32} />
+                <Lock size={28} />
               </div>
-              <h3 style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--espresso-dark)', margin: '0 0 0.5rem 0' }}>
-                ¿Confirmar Cierre de Caja?
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 0.5rem 0' }}>
+                ¿Efectuar Cierre de Caja?
               </h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
-                Esta acción bloqueará las operaciones del día actual, generará el balance final y enviará el reporte PDF por correo electrónico a la administración.
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.88rem', margin: 0 }}>
+                Esta acción bloqueará las operaciones del día actual, generará el balance final y enviará el reporte PDF por correo electrónico.
               </p>
             </div>
 
             <div style={{ 
-              backgroundColor: 'var(--bg-light)', 
+              backgroundColor: 'var(--color-surface-soft)', 
               padding: '1rem', 
-              borderRadius: '0.5rem', 
+              borderRadius: '12px', 
               marginBottom: '1.5rem',
-              border: '1px solid var(--border-color)',
-              fontSize: '0.9rem'
+              border: '1px solid var(--color-border)',
+              fontSize: '0.88rem'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Total Ventas:</span>
-                <span style={{ fontWeight: '700' }}>{formatMoney(data?.ventas_totales)}</span>
+                <span style={{ color: 'var(--color-text-secondary)' }}>Total Consumos:</span>
+                <span className="text-mono" style={{ fontWeight: 700 }}>{formatMoney(data?.ventas_totales)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Total Recargas:</span>
-                <span style={{ fontWeight: '700', color: '#059669' }}>{formatMoney(data?.recargas_totales)}</span>
+                <span style={{ color: 'var(--color-text-secondary)' }}>Total Recargas:</span>
+                <span className="text-mono" style={{ fontWeight: 700, color: 'var(--color-blue-600)' }}>{formatMoney(data?.recargas_totales)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-color)' }}>
-                <span style={{ fontWeight: '700' }}>Transacciones Registradas:</span>
-                <span style={{ fontWeight: '700' }}>{data?.total_transacciones || 0}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px dashed var(--color-border)' }}>
+                <span style={{ fontWeight: 700 }}>Operaciones:</span>
+                <span className="text-mono" style={{ fontWeight: 700 }}>{data?.total_transacciones || 0}</span>
               </div>
             </div>
 
@@ -514,19 +405,9 @@ export default function CorteCajaPage() {
                 onClick={handleCerrarCaja}
                 disabled={closing}
                 className="btn btn-primary" 
-                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                style={{ flex: 1 }}
               >
-                {closing ? (
-                  <>
-                    <RefreshCw size={16} className="spin-slow" />
-                    Cerrando...
-                  </>
-                ) : (
-                  <>
-                    <Lock size={16} />
-                    Confirmar Cierre
-                  </>
-                )}
+                {closing ? 'Cerrando...' : 'Confirmar Cierre'}
               </button>
             </div>
           </div>

@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import api from '../api/client';
 import { 
   CreditCard, 
-  Search, 
   Plus, 
   Lock, 
   Unlock, 
@@ -14,14 +13,26 @@ import {
   Check, 
   ChevronLeft, 
   ChevronRight, 
-  X, 
   AlertCircle, 
   CheckCircle2,
-  Sparkles,
-  Dices,
-  QrCode
+  Sparkles, 
+  Dices, 
+  QrCode,
+  ShieldCheck,
+  Coins,
+  Ban
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { 
+  Button, 
+  Badge, 
+  Card, 
+  CardBody, 
+  StatCard, 
+  SearchInput, 
+  Modal, 
+  Skeleton 
+} from '../components/ui';
 
 export default function TarjetasPage() {
   const [searchParams] = useSearchParams();
@@ -51,7 +62,7 @@ export default function TarjetasPage() {
   const [newPinValue, setNewPinValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Detección de query param para auto-abrir modal
+  // Auto-abrir modal si query param viene con accion=nueva
   useEffect(() => {
     if (searchParams.get('accion') === 'nueva') {
       setIsCreateModalOpen(true);
@@ -84,6 +95,15 @@ export default function TarjetasPage() {
     }
   };
 
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+  };
+
+  const handleSearchClear = () => {
+    setSearch('');
+    fetchTarjetas(1, '');
+  };
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     fetchTarjetas(1, search);
@@ -102,28 +122,30 @@ export default function TarjetasPage() {
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
-    setError('');
-    setSuccess('');
-
     try {
+      setSubmitting(true);
+      setError('');
+
       const payload = {
-        saldo_inicial: parseFloat(newCard.saldo) || 0,
+        saldo: parseFloat(newCard.saldo),
         pin: newCard.pin,
-        titular_email: newCard.email_cliente || null
+        email_cliente: newCard.email_cliente || undefined,
+        fecha_vencimiento: newCard.fecha_vencimiento || undefined
       };
 
-      if (newCard.fecha_vencimiento) {
-        payload.fecha_vencimiento = newCard.fecha_vencimiento;
-      }
+      await api.post('/admin/tarjetas/crear/', payload);
+      
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
 
-      const res = await api.post('/admin/tarjetas/crear/', payload);
-      setSuccess(`Tarjeta emitida con éxito: PIN asignado [ ${res.data.pin} ]`);
+      setSuccess('Tarjeta emitida exitosamente.');
       setIsCreateModalOpen(false);
       setNewCard({ saldo: '100.00', fecha_vencimiento: '', pin: '', email_cliente: '' });
       fetchTarjetas(1);
-
-      confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+      setTimeout(() => setSuccess(''), 4000);
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || 'Error al emitir la tarjeta.');
@@ -132,16 +154,16 @@ export default function TarjetasPage() {
     }
   };
 
-  const handleToggleBlock = async (cardId) => {
+  const handleToggleBlock = async (id) => {
     try {
       setError('');
-      const res = await api.post(`/admin/tarjetas/${cardId}/bloquear/`);
+      const res = await api.post(`/admin/tarjetas/${id}/bloquear/`);
       setSuccess(res.data.mensaje);
-      setTarjetas((prev) =>
-        prev.map((t) => (t.id === cardId ? { ...t, activa: res.data.activa } : t))
-      );
+      fetchTarjetas(pagination.pagina_actual);
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al modificar estado de la tarjeta.');
+      console.error(err);
+      setError(err.response?.data?.error || 'No se pudo cambiar el estado de la tarjeta.');
     }
   };
 
@@ -153,49 +175,54 @@ export default function TarjetasPage() {
 
   const handleUpdatePin = async (e) => {
     e.preventDefault();
-    if (newPinValue.length !== 4 || !/^\d{4}$/.test(newPinValue)) {
-      setError('El PIN debe tener exactamente 4 dígitos numéricos.');
+    if (newPinValue.length !== 4) {
+      setError('El PIN debe contener exactamente 4 dígitos.');
       return;
     }
 
     try {
       setSubmitting(true);
       setError('');
-      const res = await api.post(`/admin/tarjetas/${selectedCard.id}/pin/`, { pin: newPinValue });
-      setSuccess(res.data.mensaje);
+      await api.post(`/admin/tarjetas/${selectedCard.id}/cambiar-pin/`, { pin: newPinValue });
+      setSuccess('PIN actualizado correctamente.');
       setIsPinModalOpen(false);
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
+      console.error(err);
       setError(err.response?.data?.error || 'Error al actualizar el PIN.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDelete = async (cardId) => {
-    if (!window.confirm('¿Seguro que deseas eliminar esta tarjeta permanentemente?')) return;
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Seguro que deseas eliminar esta tarjeta sin movimientos? Esta acción no se puede deshacer.')) return;
+
     try {
       setError('');
-      await api.delete(`/admin/tarjetas/${cardId}/`);
-      setSuccess('Tarjeta eliminada correctamente.');
+      await api.delete(`/admin/tarjetas/${id}/eliminar/`);
+      setSuccess('Tarjeta eliminada con éxito.');
       fetchTarjetas(pagination.pagina_actual);
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || 'No se pudo eliminar la tarjeta.');
+      console.error(err);
+      setError(err.response?.data?.error || 'Error al eliminar la tarjeta.');
     }
   };
 
-  const handleDownloadPDF = async (cardId) => {
+  const handleDownloadPDF = async (id) => {
     try {
-      const response = await api.get(`/tarjetas/${cardId}/pdf/`, { responseType: 'blob' });
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
+      const res = await api.get(`/tarjetas/${id}/descargar-pdf/`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `GiftCard_${cardId}.pdf`);
+      link.setAttribute('download', `Tarjeta-NexoCard-${id.slice(0, 8)}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (err) {
-      setError('Error al generar y descargar el PDF de la tarjeta.');
+      console.error(err);
+      alert('Error al descargar el PDF de la tarjeta.');
     }
   };
 
@@ -205,31 +232,31 @@ export default function TarjetasPage() {
 
   return (
     <div>
-      {/* 1. Encabezado */}
+      {/* 1. Encabezado Oficial NexoCard */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--color-border)' }}>
         <div>
-          <h1 className="page-title" style={{ fontSize: '1.85rem', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+          <h1 className="page-title" style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--color-navy-950)', margin: 0, letterSpacing: '-0.02em' }}>
             Gestión de Tarjetas
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.88rem', margin: '0.25rem 0 0 0' }}>
-            Emisión, control de seguridad, saldos y supervisión de Gift Cards
+            Emisión, saldos, seguridad y control operativo de Gift Cards NexoCard
           </p>
         </div>
 
-        <button 
-          onClick={() => { setIsCreateModalOpen(true); handleRandomPin(); }} 
-          className="btn btn-primary"
+        <Button 
+          variant="primary"
+          icon={Plus}
+          onClick={() => { setIsCreateModalOpen(true); handleRandomPin(); }}
         >
-          <Plus size={16} />
-          <span>Emitir Tarjeta</span>
-        </button>
+          Emitir Tarjeta
+        </Button>
       </div>
 
-      {/* Alertas */}
+      {/* Alertas con Micro-animación */}
       {error && (
         <div style={{ 
           backgroundColor: 'var(--color-danger-100)', 
-          border: '1px solid rgba(198,40,40,0.2)', 
+          border: '1px solid rgba(239, 68, 68, 0.25)', 
           color: 'var(--color-danger-600)', 
           padding: '0.85rem 1.25rem', 
           borderRadius: '12px', 
@@ -237,7 +264,8 @@ export default function TarjetasPage() {
           display: 'flex',
           alignItems: 'center',
           gap: '0.65rem',
-          fontSize: '0.88rem'
+          fontSize: '0.88rem',
+          animation: 'fadeIn 0.2s ease-out'
         }}>
           <AlertCircle size={18} style={{ flexShrink: 0 }} />
           <span>{error}</span>
@@ -247,7 +275,7 @@ export default function TarjetasPage() {
       {success && (
         <div style={{ 
           backgroundColor: 'var(--color-success-100)', 
-          border: '1px solid rgba(19,138,69,0.2)', 
+          border: '1px solid rgba(34, 197, 94, 0.25)', 
           color: 'var(--color-success-600)', 
           padding: '0.85rem 1.25rem', 
           borderRadius: '12px', 
@@ -255,429 +283,405 @@ export default function TarjetasPage() {
           display: 'flex',
           alignItems: 'center',
           gap: '0.65rem',
-          fontSize: '0.88rem'
+          fontSize: '0.88rem',
+          animation: 'fadeIn 0.2s ease-out'
         }}>
           <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
           <span>{success}</span>
         </div>
       )}
 
-      {/* 2. Estadísticas Rápidas */}
+      {/* 2. KPIs Rápidos Reutilizables con StatCard */}
       {stats && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '1.15rem',
           marginBottom: '1.5rem'
         }}>
-          <div className="card" style={{ padding: '1rem 1.25rem' }}>
-            <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.06em' }}>Total Emitidas</span>
-            <div className="text-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-text-primary)', marginTop: '0.2rem' }}>{stats.total}</div>
-          </div>
-          <div className="card" style={{ padding: '1rem 1.25rem' }}>
-            <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.06em' }}>Tarjetas Activas</span>
-            <div className="text-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-success-600)', marginTop: '0.2rem' }}>{stats.activas}</div>
-          </div>
-          <div className="card" style={{ padding: '1rem 1.25rem' }}>
-            <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.06em' }}>Saldo en Circulación</span>
-            <div className="text-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-gold-600)', marginTop: '0.2rem' }}>{formatMoney(stats.saldo_total)}</div>
-          </div>
-          <div className="card" style={{ padding: '1rem 1.25rem' }}>
-            <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.06em' }}>Bloqueadas</span>
-            <div className="text-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-danger-600)', marginTop: '0.2rem' }}>{stats.bloqueadas}</div>
-          </div>
+          <StatCard
+            title="Total Emitidas"
+            value={stats.total}
+            icon={CreditCard}
+            color="blue"
+            subtitle="Tarjetas registradas en el tenant"
+          />
+          <StatCard
+            title="Tarjetas Activas"
+            value={stats.activas}
+            icon={ShieldCheck}
+            color="emerald"
+            subtitle="Operativas para consumo"
+          />
+          <StatCard
+            title="Saldo en Circulación"
+            value={formatMoney(stats.saldo_total)}
+            icon={Coins}
+            color="cyan"
+            subtitle="Pasivo prepagado disponible"
+          />
+          <StatCard
+            title="Tarjetas Bloqueadas"
+            value={stats.bloqueadas}
+            icon={Ban}
+            color="amber"
+            subtitle="Restringidas por seguridad"
+          />
         </div>
       )}
 
-      {/* 3. Toolbar de Búsqueda y Filtros */}
-      <div className="card" style={{ padding: '1.15rem', marginBottom: '1.25rem' }}>
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-            <input
-              type="text"
-              className="form-control"
-              style={{ paddingLeft: '2.5rem' }}
-              placeholder="Buscar por código, cliente o email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <Search size={18} style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-          </div>
+      {/* 3. Toolbar con Componentes Reutilizables */}
+      <Card style={{ marginBottom: '1.25rem' }}>
+        <CardBody style={{ padding: '1rem 1.25rem' }}>
+          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ flex: 1, minWidth: '260px' }}>
+              <SearchInput
+                placeholder="Buscar por código, cliente o email..."
+                value={search}
+                onChange={handleSearchChange}
+                onClear={handleSearchClear}
+              />
+            </div>
 
-          <select
-            className="form-control"
-            style={{ width: 'auto', minWidth: '180px' }}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="">Todos los Estados</option>
-            <option value="active">Activas con Saldo</option>
-            <option value="blocked">Bloqueadas</option>
-            <option value="depleted">Saldo Agotado (Q0)</option>
-          </select>
+            <select
+              className="search-input"
+              style={{ width: 'auto', minWidth: '190px', padding: '0.65rem 1rem' }}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">Todos los Estados</option>
+              <option value="active">Activas con Saldo</option>
+              <option value="blocked">Bloqueadas</option>
+              <option value="depleted">Saldo Agotado (Q0)</option>
+            </select>
 
-          <button type="submit" className="btn btn-secondary">
-            Filtrar
-          </button>
-        </form>
-      </div>
+            <Button type="submit" variant="secondary">
+              Filtrar
+            </Button>
+          </form>
+        </CardBody>
+      </Card>
 
       {/* 4. Tabla de Tarjetas Enriquecida */}
-      <div className="table-container">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Identificador (UUID)</th>
-              <th>Titular / Cliente</th>
-              <th>Saldo</th>
-              <th>Vencimiento</th>
-              <th>Estado</th>
-              <th style={{ textAlign: 'right' }}>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+      <Card>
+        <div className="table-container" style={{ margin: 0, borderRadius: 0, border: 'none' }}>
+          <table className="table">
+            <thead>
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--color-text-secondary)' }}>
-                  Cargando tarjetas...
-                </td>
+                <th>Identificador (UUID)</th>
+                <th>Titular / Cliente</th>
+                <th>Saldo Disponible</th>
+                <th>Vencimiento</th>
+                <th>Estado</th>
+                <th style={{ textAlign: 'right' }}>Acciones</th>
               </tr>
-            ) : tarjetas.length === 0 ? (
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--color-text-muted)' }}>
-                  No se encontraron tarjetas con los filtros aplicados.
-                </td>
-              </tr>
-            ) : (
-              tarjetas.map((t) => (
-                <tr key={t.id}>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <span className="text-mono" style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                        •••• {t.id.slice(-6)}
-                      </span>
-                      <button 
-                        onClick={() => handleCopy(t.id)} 
-                        className="btn btn-sm"
-                        style={{ padding: '0.2rem 0.4rem', border: 'none', background: 'transparent', color: 'var(--color-text-muted)', cursor: 'pointer' }}
-                        title="Copiar UUID completo"
-                      >
-                        {copiedId === t.id ? <Check size={14} style={{ color: 'var(--color-success-600)' }} /> : <Copy size={14} />}
-                      </button>
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <strong style={{ color: 'var(--color-text-primary)' }}>{t.dueno_username || t.email_cliente || 'Al Portador'}</strong>
-                      {t.email_cliente && t.dueno_username && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{t.email_cliente}</div>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <span className="text-mono" style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--color-text-primary)' }}>
-                      {formatMoney(t.saldo)}
-                    </span>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
-                      {t.fecha_vencimiento || 'Sin límite'}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${t.activa ? 'badge-success' : 'badge-danger'}`}>
-                      <span className="badge-dot"></span>
-                      {t.activa ? 'ACTIVA' : 'BLOQUEADA'}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end' }}>
-                      {/* Ver QR */}
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => setShowQrModal(t)}
-                        title="Ver Código QR"
-                      >
-                        <QrCode size={14} />
-                      </button>
-
-                      {/* Descargar PDF */}
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => handleDownloadPDF(t.id)}
-                        title="Descargar PDF imprimible"
-                      >
-                        <FileDown size={14} />
-                      </button>
-
-                      {/* Cambiar PIN */}
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => handleOpenPinModal(t)}
-                        title="Cambiar PIN"
-                      >
-                        <KeyRound size={14} />
-                      </button>
-
-                      {/* Bloquear / Desbloquear */}
-                      <button
-                        className={`btn btn-sm ${t.activa ? 'btn-secondary' : 'btn-primary'}`}
-                        onClick={() => handleToggleBlock(t.id)}
-                        title={t.activa ? 'Bloquear Tarjeta' : 'Desbloquear Tarjeta'}
-                      >
-                        {t.activa ? <Lock size={14} /> : <Unlock size={14} />}
-                      </button>
-
-                      {/* Eliminar (solo si no tiene movimientos) */}
-                      {t.movimientos_count === 0 && (
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleDelete(t.id)}
-                          title="Eliminar Tarjeta"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                    </div>
+            </thead>
+            <tbody>
+              {loading ? (
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <tr key={idx}>
+                    <td><Skeleton height="20px" width="120px" /></td>
+                    <td><Skeleton height="20px" width="160px" /></td>
+                    <td><Skeleton height="20px" width="90px" /></td>
+                    <td><Skeleton height="20px" width="110px" /></td>
+                    <td><Skeleton height="22px" width="75px" borderRadius="9999px" /></td>
+                    <td style={{ textAlign: 'right' }}><Skeleton height="32px" width="140px" style={{ marginLeft: 'auto' }} /></td>
+                  </tr>
+                ))
+              ) : tarjetas.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--color-text-muted)' }}>
+                    <CreditCard size={36} style={{ margin: '0 auto 0.75rem', opacity: 0.35, display: 'block' }} />
+                    <div style={{ fontWeight: 600, color: 'var(--color-text-secondary)' }}>No se encontraron tarjetas</div>
+                    <div style={{ fontSize: '0.8125rem', marginTop: '0.25rem' }}>Prueba ajustando los filtros o emitiendo una nueva tarjeta.</div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                tarjetas.map((t) => (
+                  <tr key={t.id}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span className="text-mono" style={{ fontWeight: 700, color: 'var(--color-navy-950)' }}>
+                          •••• {t.id.slice(-6)}
+                        </span>
+                        <button 
+                          onClick={() => handleCopy(t.id)} 
+                          className="btn-ghost btn-sm"
+                          style={{ padding: '0.2rem 0.35rem', cursor: 'pointer', borderRadius: '6px' }}
+                          title="Copiar UUID completo"
+                        >
+                          {copiedId === t.id ? <Check size={14} style={{ color: 'var(--color-success-600)' }} /> : <Copy size={14} />}
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <div>
+                        <strong style={{ color: 'var(--color-navy-950)' }}>{t.dueno_username || t.email_cliente || 'Al Portador'}</strong>
+                        {t.email_cliente && t.dueno_username && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{t.email_cliente}</div>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <span className="text-mono tabular-nums" style={{ fontWeight: 800, fontSize: '1.025rem', color: 'var(--color-navy-950)' }}>
+                        {formatMoney(t.saldo)}
+                      </span>
+                    </td>
+                    <td>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                        {t.fecha_vencimiento || 'Sin límite'}
+                      </span>
+                    </td>
+                    <td>
+                      <Badge variant={t.activa ? 'success' : 'danger'} dot={t.activa}>
+                        {t.activa ? 'ACTIVA' : 'BLOQUEADA'}
+                      </Badge>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end' }}>
+                        {/* Ver QR */}
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setShowQrModal(t)}
+                          title="Ver Código QR"
+                        >
+                          <QrCode size={14} />
+                        </Button>
 
-      {/* Paginación */}
+                        {/* Descargar PDF */}
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleDownloadPDF(t.id)}
+                          title="Descargar PDF imprimible"
+                        >
+                          <FileDown size={14} />
+                        </Button>
+
+                        {/* Cambiar PIN */}
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleOpenPinModal(t)}
+                          title="Cambiar PIN"
+                        >
+                          <KeyRound size={14} />
+                        </Button>
+
+                        {/* Bloquear / Desbloquear */}
+                        <Button
+                          variant={t.activa ? 'outline' : 'primary'}
+                          size="sm"
+                          onClick={() => handleToggleBlock(t.id)}
+                          title={t.activa ? 'Bloquear Tarjeta' : 'Desbloquear Tarjeta'}
+                        >
+                          {t.activa ? <Lock size={14} /> : <Unlock size={14} />}
+                        </Button>
+
+                        {/* Eliminar (solo si no tiene movimientos) */}
+                        {t.movimientos_count === 0 && (
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDelete(t.id)}
+                            title="Eliminar Tarjeta"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* 5. Paginación Estandarizada */}
       {pagination.total_paginas > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
-          <button
-            className="btn btn-secondary btn-sm"
+          <Button
+            variant="secondary"
+            size="sm"
             disabled={!pagination.tiene_anterior}
             onClick={() => fetchTarjetas(pagination.pagina_actual - 1)}
+            icon={ChevronLeft}
           >
-            <ChevronLeft size={16} />
-            <span>Anterior</span>
-          </button>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+            Anterior
+          </Button>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-navy-800)' }}>
             Página {pagination.pagina_actual} de {pagination.total_paginas}
           </span>
-          <button
-            className="btn btn-secondary btn-sm"
+          <Button
+            variant="secondary"
+            size="sm"
             disabled={!pagination.tiene_siguiente}
             onClick={() => fetchTarjetas(pagination.pagina_actual + 1)}
           >
             <span>Siguiente</span>
             <ChevronRight size={16} />
-          </button>
+          </Button>
         </div>
       )}
 
-      {/* 5. Modal: Emitir Nueva Tarjeta con Montos Rápidos (Brief Sec. 19) */}
-      {isCreateModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(36, 19, 7, 0.65)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          backdropFilter: 'blur(4px)',
-          padding: '1rem'
-        }}>
-          <div className="card" style={{ maxWidth: '460px', width: '100%', padding: '2rem', animation: 'fadeIn 0.2s ease-out' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--color-border)' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--color-text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Sparkles size={20} style={{ color: 'var(--color-gold-500)' }} />
-                <span>Emitir Tarjeta de Regalo</span>
-              </h3>
-              <button onClick={() => setIsCreateModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}>
-                <X size={20} />
+      {/* 6. Modal Reutilizable: Emitir Tarjeta */}
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Emitir Tarjeta de Regalo"
+        subtitle="Crea una Gift Card con saldo inicial precargado y PIN de seguridad"
+        maxWidth="480px"
+      >
+        <form onSubmit={handleCreateSubmit}>
+          {/* Montos Rápidos */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8125rem' }}>Monto Inicial (GTQ)</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              {['50.00', '100.00', '200.00', '500.00'].map((val) => (
+                <button 
+                  key={val}
+                  type="button"
+                  onClick={() => setNewCard({ ...newCard, saldo: val })}
+                  className={`btn btn-sm ${newCard.saldo === val ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ fontWeight: 700 }}
+                >
+                  Q{Number(val)}
+                </button>
+              ))}
+            </div>
+            <input
+              type="number"
+              step="0.01"
+              min="0.00"
+              className="search-input text-mono tabular-nums"
+              style={{ fontSize: '1.25rem', fontWeight: 800 }}
+              value={newCard.saldo}
+              onChange={(e) => setNewCard({ ...newCard, saldo: e.target.value })}
+              required
+            />
+          </div>
+
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8125rem' }}>Correo del Titular (Opcional)</label>
+            <input
+              type="email"
+              className="search-input"
+              placeholder="cliente@ejemplo.com"
+              value={newCard.email_cliente}
+              onChange={(e) => setNewCard({ ...newCard, email_cliente: e.target.value })}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+              <label className="form-label" style={{ margin: 0, fontWeight: 700, fontSize: '0.8125rem' }}>PIN de Seguridad (4 dígitos)</label>
+              <button
+                type="button"
+                onClick={handleRandomPin}
+                className="btn-ghost btn-sm"
+                style={{ padding: '0.15rem 0.45rem', fontSize: '0.75rem', color: 'var(--color-blue-600)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              >
+                <Dices size={13} />
+                <span>Generar Aleatorio</span>
               </button>
             </div>
-
-            <form onSubmit={handleCreateSubmit}>
-              {/* Montos Rápidos */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label className="form-label">Monto Inicial</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.4rem', marginBottom: '0.6rem' }}>
-                  {['50.00', '100.00', '200.00', '500.00'].map((val) => (
-                    <button 
-                      key={val}
-                      type="button"
-                      onClick={() => setNewCard({ ...newCard, saldo: val })}
-                      className="btn btn-secondary btn-sm"
-                      style={{ 
-                        fontWeight: '700',
-                        backgroundColor: newCard.saldo === val ? 'var(--color-gold-soft)' : 'var(--color-surface)',
-                        borderColor: newCard.saldo === val ? 'var(--color-gold-500)' : 'var(--color-border)'
-                      }}
-                    >
-                      Q{Number(val)}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0.00"
-                  className="form-control text-mono"
-                  style={{ fontSize: '1.2rem', fontWeight: 700 }}
-                  value={newCard.saldo}
-                  onChange={(e) => setNewCard({ ...newCard, saldo: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label className="form-label">Correo del Titular (Opcional)</label>
-                <input
-                  type="email"
-                  className="form-control"
-                  placeholder="cliente@ejemplo.com"
-                  value={newCard.email_cliente}
-                  onChange={(e) => setNewCard({ ...newCard, email_cliente: e.target.value })}
-                />
-              </div>
-
-              <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                  <label className="form-label" style={{ margin: 0 }}>PIN de Seguridad (4 dígitos)</label>
-                  <button
-                    type="button"
-                    onClick={handleRandomPin}
-                    className="btn btn-sm"
-                    style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', background: 'transparent', color: 'var(--color-gold-600)', border: 'none' }}
-                  >
-                    <Dices size={14} />
-                    <span>Generar</span>
-                  </button>
-                </div>
-                <input
-                  type="password"
-                  maxLength={4}
-                  pattern="\d{4}"
-                  className="form-control text-mono"
-                  placeholder="1234"
-                  style={{ textAlign: 'center', fontSize: '1.35rem', letterSpacing: '0.35em' }}
-                  value={newCard.pin}
-                  onChange={(e) => setNewCard({ ...newCard, pin: e.target.value.replace(/\D/g, '') })}
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button type="button" onClick={() => setIsCreateModalOpen(false)} className="btn btn-secondary" style={{ flex: 1 }}>
-                  Cancelar
-                </button>
-                <button type="submit" disabled={submitting} className="btn btn-primary" style={{ flex: 1 }}>
-                  {submitting ? 'Emitiendo...' : 'Emitir Tarjeta'}
-                </button>
-              </div>
-            </form>
+            <input
+              type="password"
+              maxLength={4}
+              pattern="\d{4}"
+              className="search-input text-mono"
+              placeholder="••••"
+              style={{ textAlign: 'center', fontSize: '1.4rem', letterSpacing: '0.4em' }}
+              value={newCard.pin}
+              onChange={(e) => setNewCard({ ...newCard, pin: e.target.value.replace(/\D/g, '') })}
+              required
+            />
           </div>
-        </div>
-      )}
 
-      {/* Modal: Cambiar PIN */}
-      {isPinModalOpen && selectedCard && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(36, 19, 7, 0.65)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          backdropFilter: 'blur(4px)',
-          padding: '1rem'
-        }}>
-          <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '2rem' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--color-text-primary)', margin: '0 0 0.5rem 0' }}>
-              Cambiar PIN de Tarjeta
-            </h3>
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-              Tarjeta •••• {selectedCard.id?.slice(-6)}
-            </p>
-
-            <form onSubmit={handleUpdatePin}>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label className="form-label">Nuevo PIN (4 dígitos numéricos)</label>
-                <input
-                  type="password"
-                  maxLength={4}
-                  pattern="\d{4}"
-                  className="form-control text-mono"
-                  placeholder="••••"
-                  style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.4em' }}
-                  value={newPinValue}
-                  onChange={(e) => setNewPinValue(e.target.value.replace(/\D/g, ''))}
-                  autoFocus
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button type="button" onClick={() => setIsPinModalOpen(false)} className="btn btn-secondary" style={{ flex: 1 }}>
-                  Cancelar
-                </button>
-                <button type="submit" disabled={submitting} className="btn btn-primary" style={{ flex: 1 }}>
-                  Guardar PIN
-                </button>
-              </div>
-            </form>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+            <Button type="button" variant="secondary" onClick={() => setIsCreateModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" variant="primary" loading={submitting}>
+              Emitir Tarjeta
+            </Button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
 
-      {/* Modal: Ver QR de la tarjeta */}
-      {showQrModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(36, 19, 7, 0.65)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          backdropFilter: 'blur(4px)',
-          padding: '1rem'
-        }}>
-          <div className="card" style={{ maxWidth: '380px', width: '100%', padding: '2rem', textAlign: 'center' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 0.5rem 0' }}>
-              Código QR de la Tarjeta
-            </h3>
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-              Escanee en Terminal POS para realizar operaciones
-            </p>
-
-            <div style={{ padding: '1rem', backgroundColor: '#fff', borderRadius: '12px', border: '1px solid var(--color-border)', display: 'inline-block', marginBottom: '1.25rem' }}>
-              <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(showQrModal.id)}`} 
-                alt="QR Tarjeta" 
-                style={{ width: '200px', height: '200px', display: 'block' }}
-              />
-            </div>
-
-            <div className="text-mono" style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem' }}>
-              {showQrModal.id}
-            </div>
-
-            <button onClick={() => setShowQrModal(null)} className="btn btn-primary" style={{ width: '100%' }}>
-              Cerrar
-            </button>
+      {/* 7. Modal Reutilizable: Cambiar PIN */}
+      <Modal
+        isOpen={isPinModalOpen && !!selectedCard}
+        onClose={() => setIsPinModalOpen(false)}
+        title="Cambiar PIN de Tarjeta"
+        subtitle={`Tarjeta •••• ${selectedCard?.id?.slice(-6)}`}
+        maxWidth="400px"
+      >
+        <form onSubmit={handleUpdatePin}>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8125rem' }}>Nuevo PIN (4 dígitos numéricos)</label>
+            <input
+              type="password"
+              maxLength={4}
+              pattern="\d{4}"
+              className="search-input text-mono"
+              placeholder="••••"
+              style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.4em' }}
+              value={newPinValue}
+              onChange={(e) => setNewPinValue(e.target.value.replace(/\D/g, ''))}
+              autoFocus
+              required
+            />
           </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+            <Button type="button" variant="secondary" onClick={() => setIsPinModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" variant="primary" loading={submitting}>
+              Guardar PIN
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* 8. Modal Reutilizable: Ver Código QR */}
+      <Modal
+        isOpen={!!showQrModal}
+        onClose={() => setShowQrModal(null)}
+        title="Código QR de la Tarjeta"
+        subtitle="Escanee en el Terminal POS para realizar cobros o recargas"
+        maxWidth="380px"
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            padding: '1.25rem', 
+            backgroundColor: '#FFFFFF', 
+            borderRadius: '16px', 
+            border: '1px solid var(--color-border)', 
+            display: 'inline-block', 
+            boxShadow: 'var(--shadow-subtle)',
+            marginBottom: '1rem' 
+          }}>
+            <img 
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(showQrModal?.id || '')}`} 
+              alt="QR Tarjeta" 
+              style={{ width: '200px', height: '200px', display: 'block' }}
+            />
+          </div>
+
+          <div className="text-mono" style={{ fontSize: '0.8125rem', color: 'var(--color-navy-700)', fontWeight: 600, marginBottom: '1.5rem', wordBreak: 'break-all' }}>
+            {showQrModal?.id}
+          </div>
+
+          <Button variant="primary" style={{ width: '100%' }} onClick={() => setShowQrModal(null)}>
+            Cerrar
+          </Button>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

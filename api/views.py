@@ -1,17 +1,62 @@
-# api/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny # <--- Unificados
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import authenticate
 from core.models import GiftCard, Transaccion
-from .serializers import CambioPinSerializer, GiftCardSerializer, TransaccionSerializer, RegistroUsuarioSerializer
+from .serializers import (
+    CambioPinSerializer,
+    GiftCardSerializer,
+    TransaccionSerializer,
+    RegistroUsuarioSerializer,
+    UserSerializer
+)
 from django.db import transaction 
 from rest_framework.authtoken.models import Token
 import random
 from datetime import timedelta 
 from django.utils import timezone 
 from django.contrib.auth.models import User, Group
+
+class CustomLoginView(APIView):
+    """
+    Inicia sesión y devuelve el token junto con el perfil y roles del usuario.
+    POST /api/login/
+    Body: { "username": "admin", "password": "..." }
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        if not username or not password:
+            return Response({"error": "Debes ingresar usuario y contraseña."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = authenticate(request, username=username, password=password)
+        if not user:
+            return Response({"error": "Credenciales inválidas. Verifica tu usuario y contraseña."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        token, _ = Token.objects.get_or_create(user=user)
+        user_serializer = UserSerializer(user)
+
+        return Response({
+            "token": token.key,
+            "user": user_serializer.data,
+            "mensaje": f"Bienvenido, {user.get_full_name() or user.username}"
+        })
+
+class UsuarioActualView(APIView):
+    """
+    Devuelve los datos y roles del usuario con la sesión activa.
+    GET /api/auth/me/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
 
 class MiTarjetaView(APIView):
     permission_classes = [IsAuthenticated]

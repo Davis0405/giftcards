@@ -43,6 +43,20 @@ services:
     networks:
       - giftcards_net
 
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: giftcards_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    networks:
+      - giftcards_net
+
 volumes:
   postgres_data:
     driver: local

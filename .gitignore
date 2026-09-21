@@ -1,51 +1,30 @@
-# --- Python ---
+# --- Python & Django ---
 __pycache__/
 *.py[cod]
 *$py.class
-.venv/
+*.so
+.Python
 env/
 venv/
+.venv/
 ENV/
-
-# --- Django ---
-db.sqlite3
-db.sqlite3-journal
+*.sqlite3
 media/
 staticfiles/
 .env
 
-# --- IDEs (VS Code, PyCharm) ---
+# --- Node & Frontend ---
+**/node_modules/
+**/dist/
+**/dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- IDEs & OS ---
 .vscode/
 .idea/
-
-# --- OS ---
 .DS_Store
 Thumbs.db
-
-# --- Logs ---
 *.log
-*.pid
-
-# --- Migrations ---
-*/migrations/*.pyc
-*/migrations/__pycache__/
-*/migrations/*.py
-*/migrations/*.pyo
-*/migrations/*.pyc
-*/migrations/__init__.py
-!*/migrations/__init__.py
-
-# --- Coverage reports ---
-htmlcov/
-.coverage
-
-# --- Test reports ---
-.tox/
-.nox/
-
-# --- Celery ---
-celerybeat-schedule
-celerybeat.pid
-# --- Sphinx documentation ---
-docs/_build/
-

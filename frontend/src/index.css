@@ -1,0 +1,662 @@
+/* ==========================================================================
+   Cafetería Premium — Design Tokens & Global Styles
+   Official Brief: ui_ux_giftcards_cafeteria_premium.md
+   ========================================================================== */
+
+:root {
+  /* Lienzo y Superficies */
+  --color-bg: #FAF7F2;
+  --color-surface: #FFFFFF;
+  --color-surface-soft: #F5EFE8;
+  --color-surface-elevated: #FFFFFF;
+
+  /* Escala Espresso */
+  --color-espresso-950: #241307;
+  --color-espresso-900: #321A09;
+  --color-espresso-800: #4A280F;
+  --color-espresso-700: #603916;
+  --color-espresso-600: #78471D;
+
+  /* Acentos Dorados */
+  --color-gold-600: #C99716;
+  --color-gold-500: #E2B420;
+  --color-gold-400: #F0C84A;
+  --color-gold-soft: #FFF5D6;
+  --color-gold-subtle: rgba(226, 180, 32, 0.12);
+
+  /* Semántica Operativa */
+  --color-success-600: #138A45;
+  --color-success-500: #16A34A;
+  --color-success-100: #DCF8E8;
+  --color-danger-600: #C62828;
+  --color-danger-500: #DC2626;
+  --color-danger-100: #FDE7E7;
+  --color-warning-600: #AA6F00;
+  --color-warning-100: #FFF0C7;
+  --color-info-600: #2563EB;
+  --color-info-100: #EFF6FF;
+
+  /* Tipografía y Textos */
+  --color-text-primary: #28170D;
+  --color-text-secondary: #725D50;
+  --color-text-muted: #9C8A7E;
+  --color-text-white: #FFFFFF;
+  --color-border: #E9DFD6;
+  --color-border-light: #F0E8E1;
+
+  /* Tipografías */
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  /* Radios */
+  --radius-card: 18px;
+  --radius-btn: 12px;
+  --radius-input: 10px;
+  --radius-pill: 999px;
+
+  /* Sombras y Profundidad */
+  --shadow-subtle: 0 1px 3px rgba(40, 23, 13, 0.04);
+  --shadow-card: 0 4px 20px -2px rgba(40, 23, 13, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 8px 26px -4px rgba(40, 23, 13, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-dropdown: 0 12px 30px -4px rgba(36, 19, 7, 0.16);
+  --shadow-gold: 0 4px 16px rgba(226, 180, 32, 0.35);
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --header-height: 64px;
+}
+
+/* ==========================================================================
+   Reset & Base
+   ========================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tipografía de Encabezados (Serif reservada solo a títulos de página/branding) */
+.page-title,
+.brand-title,
+h1.serif-title {
+  font-family: var(--font-serif);
+  letter-spacing: -0.015em;
+}
+
+/* ==========================================================================
+   Layout Shell (Sidebar Vertical + Main Content)
+   ========================================================================== */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+/* Sidebar Vertical */
+.sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, var(--color-espresso-950) 0%, #1A0D05 100%);
+  color: var(--color-text-white);
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(233, 223, 214, 0.08);
+  z-index: 100;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 1.5rem 1.25rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.brand-icon-wrapper {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-gold-500) 0%, var(--color-gold-600) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-espresso-950);
+  box-shadow: 0 4px 12px rgba(226, 180, 32, 0.3);
+  flex-shrink: 0;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.brand-subtitle {
+  font-size: 0.68rem;
+  color: var(--color-gold-400);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Sidebar Navigation Items */
+.sidebar-nav {
+  padding: 1.25rem 0.85rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sidebar-group-title {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+  padding: 0 0.65rem 0.4rem;
+}
+
+.sidebar-group-items {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all 0.18s ease;
+  position: relative;
+}
+
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #FFFFFF;
+  transform: translateX(2px);
+}
+
+.sidebar-link.active {
+  background: var(--color-gold-subtle);
+  color: var(--color-gold-400);
+  font-weight: 600;
+}
+
+.sidebar-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background-color: var(--color-gold-500);
+}
+
+/* Sidebar User Profile Footer */
+.sidebar-footer {
+  padding: 1rem 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.user-profile-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.user-profile-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-espresso-800);
+  border: 1.5px solid var(--color-gold-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold-400);
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* User Dropdown Menu */
+.user-dropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0.85rem;
+  right: 0.85rem;
+  background: #1C0F07;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: var(--shadow-dropdown);
+  padding: 0.5rem;
+  z-index: 150;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.user-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+.user-dropdown-item.danger {
+  color: #F87171;
+}
+
+.user-dropdown-item.danger:hover {
+  background: rgba(220, 38, 38, 0.15);
+  color: #FCA5A5;
+}
+
+/* ==========================================================================
+   Main Content Area
+   ========================================================================== */
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* previene overflow en flex child */
+  background-color: var(--color-bg);
+}
+
+.content-container {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 2rem 3rem;
+  flex: 1;
+}
+
+@media (max-width: 1024px) {
+  .content-container {
+    padding: 1.5rem 1.25rem 2.5rem;
+  }
+}
+
+/* ==========================================================================
+   Cards & Surfaces
+   ========================================================================== */
+
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-soft {
+  background-color: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+/* KPI Stat Cards (Compactos y contextuales según el brief) */
+.kpi-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 140px;
+  transition: all 0.18s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.kpi-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+}
+
+.kpi-icon-pill {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kpi-value {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.4rem;
+}
+
+.kpi-context {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ==========================================================================
+   Botones (Jerarquía Estricta: Primary CTA dorado vs Secondary neutro)
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  border-radius: var(--radius-btn);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.16s ease;
+  line-height: 1;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Primary CTA — Fondo dorado con texto espresso (Brief Sec. 8) */
+.btn-primary {
+  background: linear-gradient(180deg, var(--color-gold-500) 0%, var(--color-gold-600) 100%);
+  color: var(--color-espresso-950);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-gold);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, var(--color-gold-400) 0%, var(--color-gold-500) 100%);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Secondary CTA — Neutral / Outline elegante */
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-subtle);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-surface-soft);
+  border-color: #D6C7BC;
+}
+
+/* Danger / Destructivo */
+.btn-danger {
+  background: var(--color-danger-100);
+  color: var(--color-danger-600);
+  border: 1px solid rgba(198, 40, 40, 0.2);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #F8D7D7;
+}
+
+.btn-sm {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  border-radius: 8px;
+}
+
+/* ==========================================================================
+   Formularios e Inputs
+   ========================================================================== */
+
+.form-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.7rem 0.95rem;
+  font-size: 0.92rem;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: var(--color-gold-500);
+  box-shadow: 0 0 0 3px rgba(226, 180, 32, 0.18);
+}
+
+/* ==========================================================================
+   Tablas y Listados
+   ========================================================================== */
+
+.table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  background-color: var(--color-surface-soft);
+  padding: 0.85rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table td {
+  padding: 1rem;
+  font-size: 0.88rem;
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text-primary);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background-color: rgba(245, 239, 232, 0.4);
+}
+
+/* Badges de Estado (Badge + Dot + Texto, Brief Sec. 20) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.badge-success {
+  background-color: var(--color-success-100);
+  color: var(--color-success-600);
+  border: 1px solid rgba(19, 138, 69, 0.2);
+}
+.badge-success .badge-dot { background-color: var(--color-success-600); }
+
+.badge-danger {
+  background-color: var(--color-danger-100);
+  color: var(--color-danger-600);
+  border: 1px solid rgba(198, 40, 40, 0.2);
+}
+.badge-danger .badge-dot { background-color: var(--color-danger-600); }
+
+.badge-warning {
+  background-color: var(--color-warning-100);
+  color: var(--color-warning-600);
+  border: 1px solid rgba(170, 111, 0, 0.2);
+}
+.badge-warning .badge-dot { background-color: var(--color-warning-600); }
+
+/* Quick Action Card (Vertical con icono y flecha, Brief Sec. 14) */
+.quick-action-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.15rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--color-text-primary);
+  transition: all 0.18s ease;
+  box-shadow: var(--shadow-subtle);
+  cursor: pointer;
+}
+
+.quick-action-card:hover {
+  border-color: var(--color-gold-500);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+.quick-action-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.quick-action-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background-color: var(--color-surface-soft);
+  color: var(--color-espresso-800);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Utilidades */
+.text-mono {
+  font-family: var(--font-mono);
+}
+
+.spin-slow {
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,51 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+# --- Django ---
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+.env
+
+# --- IDEs (VS Code, PyCharm) ---
+.vscode/
+.idea/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
+*.pid
+
+# --- Migrations ---
+*/migrations/*.pyc
+*/migrations/__pycache__/
+*/migrations/*.py
+*/migrations/*.pyo
+*/migrations/*.pyc
+*/migrations/__init__.py
+!*/migrations/__init__.py
+
+# --- Coverage reports ---
+htmlcov/
+.coverage
+
+# --- Test reports ---
+.tox/
+.nox/
+
+# --- Celery ---
+celerybeat-schedule
+celerybeat.pid
+# --- Sphinx documentation ---
+docs/_build/
+

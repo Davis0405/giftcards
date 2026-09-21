@@ -1,9 +1,11 @@
 import uuid
+from pytz import timezone
 import qrcode
 from io import BytesIO
 from django.db import models
 from django.core.files import File
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class GiftCard(models.Model):
     # UUID: Identificador único universal (el que irá en el QR)
@@ -55,3 +57,16 @@ class Transaccion(models.Model):
 
     def __str__(self):
         return f"{self.tipo} - Q{self.monto} - {self.fecha.strftime('%Y-%m-%d %H:%M')}"
+
+class CierreDiario(models.Model):
+    operador = models.ForeignKey(User, on_delete=models.CASCADE)
+    fecha = models.DateField(default=timezone.now) # Solo la fecha (sin hora)
+    hora_cierre = models.DateTimeField(auto_now_add=True) # Hora exacta del clic
+    total_recaudado = models.DecimalField(max_digits=10, decimal_places=2)
+    cantidad_operaciones = models.IntegerField()
+    
+    class Meta:
+        unique_together = ('operador', 'fecha') # ⚠️ IMPORTANTE: Solo 1 cierre por usuario al día
+
+    def __str__(self):
+        return f"Cierre de {self.operador} - {self.fecha}"   

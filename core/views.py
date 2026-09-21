@@ -2,7 +2,7 @@ from functools import wraps
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import GiftCard, Transaccion
+from .models import GiftCard, Transaccion, CierreDiario
 from django.db import transaction
 from .forms import GiftCardForm
 from decimal import Decimal #para manejar dinero
@@ -17,7 +17,6 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from .utils import render_to_pdf
 from django.template.loader import render_to_string
-# En core/views.py
 from django.db.models import Sum
 from datetime import time, timedelta
 from django.contrib.auth.models import User
@@ -27,10 +26,8 @@ import dotenv
 from django.utils.crypto import constant_time_compare
 from django.core.cache import cache
 import logging
-from django.shortcuts import get_object_or_404, redirect
-logger = logging.getLogger(__name__)
 from pathlib import Path
-
+logger = logging.getLogger(__name__)
 from io import BytesIO
 from xhtml2pdf import pisa
 from django.template.loader import render_to_string
@@ -308,15 +305,56 @@ def lista_tarjetas(request):
         messages.error(request, "⛔ Acceso denegado.")
         return redirect('dashboard')
 
-    # Optimizamos trayendo solo lo necesario
-    lista = GiftCard.objects.all().order_by('-fecha_creacion')
+    # 🔍 BÚSQUEDA Y FILTROS
+    search_query = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status', '')
     
-    # 📄 PAGINACIÓN: 15 tarjetas por página
-    paginator = Paginator(lista, 30) 
+    # Consulta base
+    lista = GiftCard.objects.select_related('dueno').all()
+    
+    # Aplicar búsqueda (si existe)
+    if search_query:
+        from django.db.models import Q
+        lista = lista.filter(
+            Q(id__icontains=search_query) |  # Por ID
+            Q(dueno__username__icontains=search_query) |  # Por nombre de dueño
+            Q(dueno__email__icontains=search_query) |  # Por email
+            Q(saldo__icontains=search_query)  # Por saldo
+        )
+    
+    # Aplicar filtro de estado
+    if status_filter == 'active':
+        lista = lista.filter(activa=True, saldo__gt=0)
+    elif status_filter == 'blocked':
+        lista = lista.filter(activa=False)
+    elif status_filter == 'depleted':
+        lista = lista.filter(activa=True, saldo=0)
+    
+    # Ordenar
+    lista = lista.order_by('-fecha_creacion')
+    
+    # 📄 PAGINACIÓN: 30 tarjetas por página
+    paginator = Paginator(lista, 30)
     page_num = request.GET.get('page')
     tarjetas = paginator.get_page(page_num)
     
-    return render(request, 'core/lista_tarjetas.html', {'tarjetas': tarjetas})
+    # Calcular estadísticas (de TODAS las tarjetas, no solo la página actual)
+    todas_las_tarjetas = GiftCard.objects.all()
+    stats = {
+        'total': todas_las_tarjetas.count(),
+        'activas': todas_las_tarjetas.filter(activa=True, saldo__gt=0).count(),
+        'bloqueadas': todas_las_tarjetas.filter(activa=False).count(),
+        'saldo_total': todas_las_tarjetas.aggregate(Sum('saldo'))['saldo__sum'] or 0,
+    }
+    
+    context = {
+        'tarjetas': tarjetas,
+        'stats': stats,
+        'search_query': search_query,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'core/lista_tarjetas.html', context)
 
 @login_required
 def cambiar_pin(request, uuid):
@@ -370,53 +408,83 @@ def eliminar_tarjeta(request, uuid):
 def corte_caja(request):
     hoy = timezone.now().date()
     
-    # 1. Filtramos las entradas de dinero de ESTE cajero HOY
+    # 1. 🔒 VERIFICAR CANDADO: ¿Ya cerró caja hoy este usuario?
+    cierre_existente = CierreDiario.objects.filter(operador=request.user, fecha=hoy).first()
+
+    # 2. OBTENER DATOS (Tu filtro actual)
+    # Nota: Aquí estás incluyendo 'CONSUMO'. Recuerda que esto mezcla dinero real con saldo virtual.
     ingresos = Transaccion.objects.select_related('card').filter(
         operador=request.user,
         fecha__date=hoy,
-        tipo__in=['CARGA', 'ACTIVACION', 'CONSUMO'] # Incluye todos los tipos relevantes
+        tipo__in=['CARGA', 'ACTIVACION', 'CONSUMO'] 
     ).order_by('-fecha')
     
     total_dia = ingresos.aggregate(Sum('monto'))['monto__sum'] or 0
     cantidad_ops = ingresos.count()
     
+    # 3. PREPARAR CONTEXTO
     context = {
         'movimientos': ingresos, 
         'total_dia': total_dia,
         'cantidad_ops': cantidad_ops,
         'fecha': hoy,
-        'cajero': request.user
+        'cajero': request.user,
+        'cierre_realizado': cierre_existente # <--- Variable útil para ocultar el botón en el HTML
     }
 
+    # 4. AVISO VISUAL SI YA CERRÓ
+    if cierre_existente:
+        messages.warning(request, "⚠️ ATENCIÓN: Tu caja ya fue cerrada el día de hoy. No se pueden realizar cambios.")
+
     # ========================================================
-    # 🖨️ GENERACIÓN DE REPORTE (PDF / EMAIL)
+    # 🖨️ ACCIÓN: CERRAR CAJA Y GENERAR PDF
     # ========================================================
-    
-    # Si el usuario presionó el botón "Descargar PDF" o "Cerrar Turno"
     if request.GET.get('accion') == 'pdf':
+        
+        # A) 🛑 BLOQUEO DE SEGURIDAD
+        if cierre_existente:
+            messages.error(request, "⛔ ERROR CRÍTICO: La caja ya está cerrada. No puedes volver a cerrarla.")
+            return redirect('dashboard')
+            
         try:
-            # Usamos una plantilla especial para el PDF del corte
+            # B) 🔒 GUARDAMOS EL CANDADO EN LA BD (El paso irreversible)
+            CierreDiario.objects.create(
+                operador=request.user,
+                fecha=hoy,
+                total_recaudado=total_dia,
+                cantidad_operaciones=cantidad_ops
+            )
+
+            # C) GENERAMOS EL PDF
             pdf = render_to_pdf('core/pdf_corte.html', context)
             
             if pdf:
-                # Opcional: Enviar copia al gerente en segundo plano
+                # D) ENVIAMOS CORREO AL JEFE (Usando EmailThread GENÉRICO)
                 asunto = f"📊 Cierre de Caja - {request.user.username} - {hoy}"
                 email = EmailMessage(
                     asunto,
-                    f"Se adjunta el corte de caja del día. Total: Q{total_dia}",
+                    f"Se adjunta el corte de caja del día. \n\nTotal Operado: Q{total_dia}\nTransacciones: {cantidad_ops}",
                     settings.DEFAULT_FROM_EMAIL,
-                    [os.getenv('EMAIL_ADMIN')], # <--- Pon el correo del jefe aquí
+                    [os.getenv('EMAIL_ADMIN')], 
                 )
                 email.attach(f'Corte_{hoy}.pdf', pdf, 'application/pdf')
-                EmailWithPDFThread(email).start() # Enviamos en silencio
+                
+                # Usamos la clase simple que agregamos antes
+                EmailThread(email).start() 
 
-                # Descargar el PDF al navegador del cajero
+                # E) DESCARGAMOS EL PDF AL CAJERO
                 response = HttpResponse(pdf, content_type='application/pdf')
                 filename = f"Corte_Caja_{hoy}.pdf"
                 response['Content-Disposition'] = f'attachment; filename="{filename}"'
+                
+                messages.success(request, "✅ Caja cerrada correctamente. El reporte ha sido enviado.")
                 return response
+                
         except Exception as e:
-            messages.error(request, f"Error generando reporte: {e}")
+            # Si falla, intentamos borrar el cierre para que pueda intentar de nuevo (opcional)
+            # CierreDiario.objects.filter(operador=request.user, fecha=hoy).delete()
+            messages.error(request, f"Error al cerrar la caja: {e}")
+            return redirect('corte_caja') # Recargamos la página para limpiar la URL
 
     # ========================================================
 
@@ -558,3 +626,19 @@ def bloquear_tarjeta(request, uuid):
         f"Tarjeta {uuid} {'BLOQUEADA' if not tarjeta.activa else 'DESBLOQUEADA'} "
         f"por {request.user.username} | Saldo: Q{tarjeta.saldo}"
     )
+
+class EmailThread(threading.Thread):
+    """
+    Thread genérico para enviar cualquier objeto EmailMessage en segundo plano.
+    Ideal para cuando ya tienes el PDF generado y adjunto.
+    """
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        try:
+            self.email.send()
+            print("✅ Email genérico enviado correctamente.")
+        except Exception as e:
+            print(f"❌ Error enviando email genérico: {e}")

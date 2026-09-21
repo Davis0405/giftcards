@@ -651,7 +651,7 @@
             <i class="bi bi-collection-fill"></i>
         </div>
         <div class="stat-label">Total de Tarjetas</div>
-        <div class="stat-value">{{ tarjetas|length }}</div>
+        <div class="stat-value">{{ stats.total }}</div>
         <div class="stat-trend positive">
             <i class="bi bi-arrow-up"></i>
             <span>Sistema activo</span>
@@ -663,10 +663,7 @@
             <i class="bi bi-check-circle-fill"></i>
         </div>
         <div class="stat-label">Tarjetas Activas</div>
-        <div class="stat-value">
-            {% widthratio tarjetas|length 1 1 as total %}
-            {{ tarjetas|length|add:"-0" }}
-        </div>
+        <div class="stat-value">{{ stats.activas }}</div>
         <div class="stat-trend positive">
             <i class="bi bi-graph-up"></i>
             <span>Disponibles</span>
@@ -678,9 +675,7 @@
             <i class="bi bi-cash-stack"></i>
         </div>
         <div class="stat-label">Saldo Total</div>
-        <div class="stat-value">
-            Q{% widthratio tarjetas|length 100 100 as fake_balance %}0.00
-        </div>
+        <div class="stat-value">Q{{ stats.saldo_total|floatformat:2 }}</div>
         <div class="stat-trend positive">
             <i class="bi bi-currency-dollar"></i>
             <span>En circulación</span>
@@ -692,7 +687,7 @@
             <i class="bi bi-shield-fill-x"></i>
         </div>
         <div class="stat-label">Tarjetas Bloqueadas</div>
-        <div class="stat-value">0</div>
+        <div class="stat-value">{{ stats.bloqueadas }}</div>
         <div class="stat-trend negative">
             <i class="bi bi-slash-circle"></i>
             <span>Inactivas</span>
@@ -702,33 +697,38 @@
 
 <!-- Filter Bar -->
 <div class="filter-bar">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div class="search-wrapper">
-            <i class="bi bi-search search-icon"></i>
-            <input 
-                type="text" 
-                class="search-input" 
-                id="searchInput"
-                placeholder="Buscar por ID, fecha o saldo..."
-                autocomplete="off">
-        </div>
-        
-        <div class="d-flex gap-2">
-            <select class="filter-select" id="statusFilter">
-                <option value="">Todos los estados</option>
-                <option value="active">Activas</option>
-                <option value="blocked">Bloqueadas</option>
-                <option value="depleted">Agotadas</option>
-            </select>
+    <form method="GET" action="{% url 'lista_tarjetas' %}" id="filterForm">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="search-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    name="search"
+                    id="searchInput"
+                    value="{{ search_query }}"
+                    placeholder="Buscar por ID, dueño o saldo..."
+                    autocomplete="off">
+            </div>
             
-            <select class="filter-select" id="sortSelect">
-                <option value="date-desc">Más recientes</option>
-                <option value="date-asc">Más antiguas</option>
-                <option value="balance-desc">Mayor saldo</option>
-                <option value="balance-asc">Menor saldo</option>
-            </select>
+            <div class="d-flex gap-2">
+                <select class="filter-select" name="status" id="statusFilter">
+                    <option value="">Todos los estados</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Activas</option>
+                    <option value="blocked" {% if status_filter == 'blocked' %}selected{% endif %}>Bloqueadas</option>
+                    <option value="depleted" {% if status_filter == 'depleted' %}selected{% endif %}>Agotadas</option>
+                </select>
+                
+                <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px;">
+                    <i class="bi bi-funnel-fill me-2"></i>Filtrar
+                </button>
+                
+                <a href="{% url 'lista_tarjetas' %}" class="btn btn-outline-secondary" style="padding: 0.75rem 1.5rem; border-radius: 12px;">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Limpiar
+                </a>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
 
 <!-- Table Card -->
@@ -835,11 +835,13 @@
                                onclick="return confirm('⚠️ ¿Estás seguro de eliminar esta tarjeta?\n\nEsta acción es IRREVERSIBLE y eliminará:\n- El saldo actual de la tarjeta\n- Todo el historial de transacciones\n- El código QR asociado\n\n¿Deseas continuar?');">
                                 <i class="bi bi-trash-fill"></i>
                             </a>
+                            
                         </div>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
+        </table>
         </table>
         {% else %}
         <div class="empty-state">
@@ -855,6 +857,54 @@
         </div>
         {% endif %}
     </div>
+    
+    <!-- ✅ PAGINACIÓN (NUEVO) -->
+    {% if tarjetas.has_other_pages %}
+    <div class="pagination-container" style="padding: 1.5rem; border-top: 1px solid #E5E7EB;">
+        <nav aria-label="Paginación de tarjetas">
+            <ul class="pagination justify-content-center mb-0" style="gap: 0.5rem;">
+                
+                {% if tarjetas.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" style="border-radius: 10px; padding: 0.5rem 1rem;">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ tarjetas.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" style="border-radius: 10px; padding: 0.5rem 1rem;">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link" style="border-radius: 10px; background: var(--primary-color); border-color: var(--primary-color); padding: 0.5rem 1rem;">
+                        Página {{ tarjetas.number }} de {{ tarjetas.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if tarjetas.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ tarjetas.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" style="border-radius: 10px; padding: 0.5rem 1rem;">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ tarjetas.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" style="border-radius: 10px; padding: 0.5rem 1rem;">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+            </ul>
+        </nav>
+        
+        <div class="text-center mt-3" style="font-size: 0.9rem; color: var(--light-text);">
+            Mostrando {{ tarjetas.start_index }} - {{ tarjetas.end_index }} de {{ tarjetas.paginator.count }} tarjetas
+        </div>
+    </div>
+    {% endif %}
+</div>
 </div>
 {% endblock %}
 
